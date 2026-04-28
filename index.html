@@ -23,7 +23,7 @@
         .btn-help { background-color: #17a2b8; }
         .btn-cloud { background-color: #3b82f6; }
         .btn-admin { background-color: #6366f1; }
-        .table-container { display: none; position: relative; background-color: white; }
+        .table-container { display: none; position: relative; background-color: white; overflow-x: auto; }
         table.main-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
         .main-table thead th { background-color: #6c757d; color: white; height: 45px; border: 1px solid #999; font-size: 1rem; box-shadow: 0 2px 2px rgba(0,0,0,0.1); }
         .main-table td { border: 1px solid #999; text-align: center; vertical-align: middle; height: 55px; padding: 2px; color: #333; overflow: hidden; }
@@ -185,9 +185,8 @@
         const adminBackend = document.getElementById('adminBackend');
         const dashboard = document.getElementById('dashboardSection');
         const userStatusDisplay = document.getElementById('userStatusDisplay');
-        const header = document.getElementById('statusHeader');
         if(currentUser) {
-            header.style.display = 'block';
+            document.querySelectorAll('.section-dashboard').forEach(el => el.style.display = 'block');
             const m = currentUser.user_metadata;
             const role = m.role || 'student';
             const displayName = userDBRecord ? userDBRecord.full_name : m.full_name;
@@ -201,8 +200,23 @@
             }
         }
     }
-    function openProfile() { const m = userDBRecord || currentUser.user_metadata; document.getElementById('profAccount').value = m.student_id || ''; document.getElementById('profName').value = m.full_name || ''; document.getElementById('profTutor').value = m.tutor || '未設定'; document.getElementById('profPassword').value = ''; toggleUIModal(true, 'profileModal'); }
-    async function updateProfile() { const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value; const d = { data: { full_name: n } }; if(p) d.password = p; try { await sb.auth.updateUser(d); await sb.from('grad_checks').update({ full_name: n }).eq('id', currentUser.id); showMsg("資料已更新！"); hasLoadedInitialData = false; await loadFromCloud(); toggleUIModal(false, 'profileModal'); } catch (e) { showMsg(e.message, 'error'); } }
+    function openProfile() { 
+        const m = userDBRecord || currentUser.user_metadata;
+        document.getElementById('profAccount').value = m.student_id || ''; 
+        document.getElementById('profName').value = m.full_name || ''; 
+        document.getElementById('profTutor').value = m.tutor || '未設定'; 
+        document.getElementById('profPassword').value = '';
+        toggleUIModal(true, 'profileModal'); 
+    }
+    async function updateProfile() { 
+        const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value;
+        const d = { data: { full_name: n } }; if(p) d.password = p;
+        try {
+            await sb.auth.updateUser(d);
+            await sb.from('grad_checks').update({ full_name: n }).eq('id', currentUser.id);
+            showMsg("資料已更新！"); hasLoadedInitialData = false; await loadFromCloud(); toggleUIModal(false, 'profileModal');
+        } catch (e) { showMsg(e.message, 'error'); } 
+    }
     async function saveToCloud() { if(!currentUser) return; const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked); const res = calculateStats(); const targetId = editingStudentId || currentUser.id; const data = { id: targetId, credits_json: checks, total_credits: res.total, is_graduated: res.pass, updated_at: new Date() }; if(!editingStudentId && userDBRecord) { data.full_name = userDBRecord.full_name; data.student_id = userDBRecord.student_id; data.tutor = userDBRecord.tutor; } const { error } = await sb.from('grad_checks').upsert(data); if(error) showMsg(error.message, 'error'); else showMsg("同步成功！"); }
     async function deleteStudentData(id, name) { if(!confirm(`確定要註銷「${name}」嗎？`)) return; await sb.from('grad_checks').delete().eq('id', id); showMsg("已註銷"); fetchAdminList(); }
     async function enterAdminEditMode(id, name) { editingStudentId = id; document.getElementById('adminEditBanner').style.display = 'block'; document.getElementById('targetStudentName').innerText = name; updateUI(); }
@@ -217,7 +231,16 @@
         document.getElementById('editUserPwd').value = '';
         toggleUIModal(true, 'adminUserModal');
     }
-    async function saveAdminUserEdit() { const id = document.getElementById('editUserId').value, sid = document.getElementById('editUserSid').value, n = document.getElementById('editUserName').value, t = document.getElementById('editUserTutor').value; try { const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, tutor: t }).eq('id', id); if(error) throw error; showMsg("帳號資料已更新"); toggleUIModal(false, 'adminUserModal'); fetchAdminList(); } catch (e) { showMsg(e.message, 'error'); } }
+    async function saveAdminUserEdit() { 
+        const id = document.getElementById('editUserId').value, sid = document.getElementById('editUserSid').value, n = document.getElementById('editUserName').value, t = document.getElementById('editUserTutor').value; 
+        try { 
+            const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, tutor: t }).eq('id', id); 
+            if(error) throw error; 
+            showMsg("帳號資料已更新"); 
+            toggleUIModal(false, 'adminUserModal'); 
+            fetchAdminList(); 
+        } catch (e) { showMsg(e.message, 'error'); } 
+    }
     async function loadFromCloud(tid = null) { 
         const uid = tid || currentUser.id; 
         const { data } = await sb.from('grad_checks').select('*').eq('id', uid).single(); 
