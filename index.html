@@ -9,8 +9,8 @@
         html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif; font-size: 16px; background-color: #f0f2f5; }
         .section-dashboard { background: white; z-index: 50; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 1px solid #ccc; box-sizing: border-box; }
         .status-bar { text-align: center; font-size: 1.4rem; font-weight: 900; padding: 10px; margin-bottom: 10px; border-radius: 8px; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .status-pass { background: linear-gradient(135deg, #28a745, #218838); } 
-        .status-fail { background: linear-gradient(135deg, #dc3545, #c82333); } 
+        .status-pass { background: linear-gradient(135deg, #28a745, #218838); }
+        .status-fail { background: linear-gradient(135deg, #dc3545, #c82333); }
         .result-table { width: 100%; margin: 0 auto; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }
         .result-table th { background-color: #555; color: white; padding: 6px; border-radius: 4px; font-weight: normal; font-size: 0.9rem; vertical-align: middle; }
         .result-table td { background-color: #fff; padding: 4px; border: 2px solid #eee; border-radius: 6px; text-align: center; font-weight: 800; font-size: 1.6rem; height: 50px; vertical-align: middle; }
@@ -20,7 +20,7 @@
         .action-btn:active { transform: scale(0.98); }
         .btn-pass-all { background-color: #218838; }
         .btn-fail-all { background-color: #6c757d; }
-        .btn-help { background-color: #17a2b8; } 
+        .btn-help { background-color: #17a2b8; }
         .btn-cloud { background-color: #3b82f6; }
         .btn-admin { background-color: #6366f1; }
         .table-container { position: relative; background-color: white; }
@@ -165,7 +165,7 @@
 <script>
     const SB_URL = "https://tsavuxtqwfugoraomoyc.supabase.co", SB_KEY = "sb_publishable_ojrdIB0TeCnl8eZXbzWsdQ_2W3JB3xT";
     const sb = supabase.createClient(SB_URL, SB_KEY);
-    let userDBRecord = null;
+    let userDBRecord = null, hasLoadedInitialData = false, lastLoadedStudentId = null;
     const curriculum = [{cat:"dept",type:1,name:"國語文",credits:[3,3,3,3,2,2]},{cat:"dept",type:1,name:"英語文",credits:[2,2,2,2,2,2]},{cat:"dept",type:1,name:"閩南語文",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"數學",credits:[3,3,0,0,0,0]},{cat:"dept",type:1,name:"歷史",credits:[0,2,0,0,0,0]},{cat:"dept",type:1,name:"地理",credits:[2,0,0,0,0,0]},{cat:"dept",type:1,name:"公民與社會",credits:[0,0,0,0,0,2]},{cat:"dept",type:1,name:"物理",credits:[2,0,0,0,0,0]},{cat:"dept",type:1,name:"化學",credits:[0,1,0,0,0,0]},{cat:"dept",type:1,name:"生物",credits:[0,1,0,0,0,0]},{cat:"dept",type:1,name:"音樂",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"美術",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"生涯規劃",credits:[0,0,0,0,1,1]},{cat:"dept",type:1,name:"資訊科技",credits:[0,2,0,0,0,0]},{cat:"dept",type:1,name:"健康與護理",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"體育",credits:[2,2,2,2,2,2]},{cat:"dept",type:1,name:"全民國防教育",credits:[1,1,0,0,0,0]},{cat:"dept",type:2,name:"商業概論",credits:[2,2,0,0,0,0]},{cat:"dept",type:2,name:"數位科技概論",credits:[2,2,0,0,0,0]},{cat:"dept",type:2,name:"會計學",credits:[3,3,2,2,0,0]},{cat:"dept",type:2,name:"經濟學",credits:[0,0,4,4,0,0]},{cat:"dept",type:3,name:"數位科技應用",credits:[0,0,2,2,0,0]},{cat:"dept",type:3,name:"商業溝通",credits:[0,0,0,0,0,2]},{cat:"dept",type:3,name:"程式語言與設計",credits:[2,2,0,0,0,0]},{cat:"dept",type:3,name:"多媒體製作與應用",credits:[0,0,3,3,0,0]},{cat:"dept",type:3,name:"資料庫應用",credits:[0,0,0,0,2,2]},{cat:"sch_req",type:1,name:"各類文選選讀",credits:[0,0,0,0,1,1]},{cat:"sch_req",type:1,name:"英文會話",credits:[1,1,0,0,0,0]},{cat:"sch_req",type:1,name:"英文閱讀初階",credits:[0,0,1,1,0,0]},{cat:"sch_req",type:1,name:"英文閱讀進階",credits:[0,0,0,0,1,1]},{cat:"sch_req",type:1,name:"數學(校定)",credits:[0,0,3,3,0,0]},{cat:"sch_req",type:2,name:"計算機探究",credits:[0,0,0,0,4,4]},{cat:"sch_req",type:2,name:"商業專論",credits:[0,0,0,0,2,2]},{cat:"sch_req",type:3,name:"記帳實務",credits:[1,1,0,0,0,0]},{cat:"sch_req",type:3,name:"專題實作",credits:[0,0,0,2,2,0]},{cat:"sch_opt",type:1,name:"數學演習",credits:[0,0,0,0,3,3]},{cat:"sch_opt",type:3,name:"文書處理",credits:[2,0,0,0,0,0]},{cat:"sch_opt",type:3,name:"專題前導",credits:[0,0,2,0,0,0]},{cat:"sch_opt",type:3,name:"軟體應用",credits:[0,0,3,0,0,0]},{cat:"sch_opt",type:3,name:"會計實務",credits:[0,0,2,2,4,4]},{cat:"sch_opt",type:3,name:"經濟應用實務",credits:[0,0,0,0,4,4]},{cat:"sch_opt",type:3,name:"同科單班(2選1)<br>網頁規劃實務/進階軟體應用",credits:[0,0,0,3,0,0]},{cat:"sch_opt",type:3,name:"同科單班(2選1)<br>進階程式設計/電腦繪圖實務",credits:[0,0,0,0,2,0]},{cat:"sch_opt",type:3,name:"跨群選修(6選1)",credits:[0,0,2,2,0,0]}];
     const mapping = { cat: { "dept": { text: "部定必修", class: "bg-dept-main", subClass: "bg-dept-sub" }, "sch_req": { text: "校定必修", class: "bg-sch-req-main", subClass: "bg-sch-req-sub" }, "sch_opt": { text: "校定選修", class: "bg-sch-opt-main", subClass: "bg-sch-opt-sub" } }, type: { 1: "一般科目", 2: "專業科目", 3: "實習科目" } };
     let DEPT_THRESHOLD = 0, currentUser = null, editingStudentId = null;
@@ -180,14 +180,7 @@
         document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '帳號登入';
         document.getElementById('authSwitchLink').innerText = isReg ? '已有帳號？點此登入吧' : '尚未有帳號？點此註冊';
     }
-    async function handleLogout() {
-        try {
-            await sb.auth.signOut();
-            window.location.href = window.location.origin + window.location.pathname;
-        } catch (e) {
-            showMsg("登出失敗", 'error');
-        }
-    }
+    async function handleLogout() { try { await sb.auth.signOut(); userDBRecord = null; hasLoadedInitialData = false; window.location.href = window.location.origin + window.location.pathname; } catch (e) { showMsg("登出失敗", 'error'); } }
     sb.auth.onAuthStateChange((event, session) => { currentUser = session ? session.user : null; updateUI(); });
     function updateUI() { 
         const tableContainer = document.getElementById('tableContainer');
@@ -201,39 +194,36 @@
             userStatusDisplay.innerHTML = `你好，${displayName} (${role==='admin'?'管理員':'學生'}) | <a href="javascript:void(0)" onclick="openProfile()">個人資料</a> | <a href="javascript:void(0)" onclick="handleLogout()">登出</a>`;
             if(role==='admin') {
                 if(!editingStudentId) { dashboard.style.display='none'; tableContainer.style.display='none'; adminBackend.style.display='block'; fetchAdminList(); } 
-                else { dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; }
-            } else { dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; loadFromCloud(); }
+                else { dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; if(lastLoadedStudentId !== editingStudentId) loadFromCloud(editingStudentId); }
+            } else { 
+                dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; 
+                if(!hasLoadedInitialData) loadFromCloud(); 
+            }
         } else {
             userStatusDisplay.innerHTML = `訪客模式 (<a href="javascript:void(0)" onclick="toggleUIModal(true, 'authModal')">登入存檔</a>)`;
             dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none';
         }
     }
-    function openProfile() { 
-        const m = userDBRecord || currentUser.user_metadata;
-        document.getElementById('profAccount').value = m.student_id || ''; 
-        document.getElementById('profName').value = m.full_name || ''; 
-        document.getElementById('profTutor').value = m.tutor || '未設定'; 
-        document.getElementById('profPassword').value = '';
-        toggleUIModal(true, 'profileModal'); 
-    }
-    async function updateProfile() { 
-        const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value;
-        const d = { data: { full_name: n } }; if(p) d.password = p;
-        try {
-            await sb.auth.updateUser(d);
-            await sb.from('grad_checks').update({ full_name: n }).eq('id', currentUser.id);
-            showMsg("資料已更新！"); 
-            await loadFromCloud(); 
-            toggleUIModal(false, 'profileModal');
-        } catch (e) { showMsg(e.message, 'error'); } 
-    }
+    function openProfile() { const m = userDBRecord || currentUser.user_metadata; document.getElementById('profAccount').value = m.student_id || ''; document.getElementById('profName').value = m.full_name || ''; document.getElementById('profTutor').value = m.tutor || '未設定'; document.getElementById('profPassword').value = ''; toggleUIModal(true, 'profileModal'); }
+    async function updateProfile() { const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value; const d = { data: { full_name: n } }; if(p) d.password = p; try { await sb.auth.updateUser(d); await sb.from('grad_checks').update({ full_name: n }).eq('id', currentUser.id); showMsg("資料已更新！"); hasLoadedInitialData = false; await loadFromCloud(); toggleUIModal(false, 'profileModal'); } catch (e) { showMsg(e.message, 'error'); } }
     async function saveToCloud() { if(!currentUser) return toggleUIModal(true, 'authModal'); const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked); const res = calculateStats(); const targetId = editingStudentId || currentUser.id; const data = { id: targetId, credits_json: checks, total_credits: res.total, is_graduated: res.pass, updated_at: new Date() }; if(!editingStudentId && userDBRecord) { data.full_name = userDBRecord.full_name; data.student_id = userDBRecord.student_id; data.tutor = userDBRecord.tutor; } const { error } = await sb.from('grad_checks').upsert(data); if(error) showMsg(error.message, 'error'); else showMsg("同步成功！"); }
     async function deleteStudentData(id, name) { if(!confirm(`確定要註銷「${name}」嗎？`)) return; await sb.from('grad_checks').delete().eq('id', id); showMsg("已註銷"); fetchAdminList(); }
-    async function enterAdminEditMode(id, name) { editingStudentId = id; document.getElementById('adminEditBanner').style.display = 'block'; document.getElementById('targetStudentName').innerText = name; updateUI(); loadFromCloud(id); }
-    function exitAdminEditMode() { editingStudentId = null; document.getElementById('adminEditBanner').style.display = 'none'; updateUI(); }
+    async function enterAdminEditMode(id, name) { editingStudentId = id; document.getElementById('adminEditBanner').style.display = 'block'; document.getElementById('targetStudentName').innerText = name; updateUI(); }
+    function exitAdminEditMode() { editingStudentId = null; lastLoadedStudentId = null; document.getElementById('adminEditBanner').style.display = 'none'; updateUI(); }
     async function openAdminUserEdit(id, sid, name, tutor) { document.getElementById('editUserId').value = id; document.getElementById('editUserSid').value = sid; document.getElementById('editUserName').value = name; document.getElementById('editUserTutor').value = tutor || '未設定'; document.getElementById('editUserPwd').value = ''; toggleUIModal(true, 'adminUserModal'); }
     async function saveAdminUserEdit() { const id = document.getElementById('editUserId').value, sid = document.getElementById('editUserSid').value, n = document.getElementById('editUserName').value, t = document.getElementById('editUserTutor').value; try { const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, tutor: t }).eq('id', id); if(error) throw error; showMsg("帳號資料已更新"); toggleUIModal(false, 'adminUserModal'); fetchAdminList(); } catch (e) { showMsg(e.message, 'error'); } }
-    async function loadFromCloud(tid = null) { const uid = tid || currentUser.id; const { data } = await sb.from('grad_checks').select('*').eq('id', uid).single(); if(data) { if(!tid) { userDBRecord = data; updateUI(); } if(data.credits_json) { document.querySelectorAll(".toggle-checkbox").forEach(c => c.checked = false); Object.keys(data.credits_json).forEach(id => { const el = document.getElementById(id); if(el) el.checked = data.credits_json[id]; }); calculate(); } } }
+    async function loadFromCloud(tid = null) { 
+        const uid = tid || currentUser.id; 
+        const { data } = await sb.from('grad_checks').select('*').eq('id', uid).single(); 
+        if(data) { 
+            if(!tid) { userDBRecord = data; hasLoadedInitialData = true; updateUI(); } else { lastLoadedStudentId = tid; }
+            if(data.credits_json) { 
+                document.querySelectorAll(".toggle-checkbox").forEach(c => c.checked = false); 
+                Object.keys(data.credits_json).forEach(id => { const el = document.getElementById(id); if(el) el.checked = data.credits_json[id]; }); 
+                calculate(); 
+            } 
+        } 
+    }
     async function fetchAdminList() { const { data } = await sb.from('grad_checks').select('*'); const b = document.getElementById('adminListBody'); b.innerHTML = ""; if(data) data.forEach(s => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}', '${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit('${s.id}', '${s.student_id}', '${s.full_name}', '${s.tutor}')">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}', '${s.full_name}')">註銷帳號</button></td>`; b.appendChild(tr); }); }
     function renderTable() { 
         const tbody = document.getElementById("tableBody"); tbody.innerHTML = ""; 
