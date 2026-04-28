@@ -4,532 +4,258 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>112入學資處科畢業檢核表</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        html, body {
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
-            font-size: 16px;
-            background-color: #f0f2f5; 
-        }
-        .section-dashboard {
-            background: white;
-            z-index: 50;
-            padding: 10px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-bottom: 1px solid #ccc;
-            box-sizing: border-box;
-            transition: all 0.3s ease; 
-        }
-        .status-bar {
-            text-align: center;
-            font-size: 1.4rem; 
-            font-weight: 900;
-            padding: 10px; 
-            margin-bottom: 10px;
-            border-radius: 8px;
-            color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif; font-size: 16px; background-color: #f0f2f5; }
+        .section-dashboard { background: white; z-index: 50; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 1px solid #ccc; box-sizing: border-box; }
+        .status-bar { text-align: center; font-size: 1.4rem; font-weight: 900; padding: 10px; margin-bottom: 10px; border-radius: 8px; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .status-pass { background: linear-gradient(135deg, #28a745, #218838); } 
         .status-fail { background: linear-gradient(135deg, #dc3545, #c82333); } 
-        .result-table { 
-            width: 100%; 
-            margin: 0 auto; 
-            border-collapse: separate; 
-            border-spacing: 4px; 
-            table-layout: fixed; 
-        }
-        .result-table th { 
-            background-color: #555; 
-            color: white; 
-            padding: 6px; 
-            border-radius: 4px; 
-            font-weight: normal; 
-            font-size: 0.9rem; 
-            vertical-align: middle;
-        }
-        .result-table td { 
-            background-color: #fff; 
-            padding: 4px; 
-            border: 2px solid #eee; 
-            border-radius: 6px;
-            text-align: center; 
-            font-weight: 800; 
-            font-size: 1.6rem; 
-            height: 50px; 
-            vertical-align: middle;
-        }
+        .result-table { width: 100%; margin: 0 auto; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }
+        .result-table th { background-color: #555; color: white; padding: 6px; border-radius: 4px; font-weight: normal; font-size: 0.9rem; vertical-align: middle; }
+        .result-table td { background-color: #fff; padding: 4px; border: 2px solid #eee; border-radius: 6px; text-align: center; font-weight: 800; font-size: 1.6rem; height: 50px; vertical-align: middle; }
         .result-table small { display: block; font-size: 0.75rem; opacity: 0.8; margin-top: 4px; font-weight: normal;}
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; width: 100%; margin-left: auto; margin-right: auto; }
-        .action-btn {
-            flex: 1; 
-            padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.1s;
-        }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; width: 100%; margin-left: auto; margin-right: auto; flex-wrap: wrap; }
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.1s; }
         .action-btn:active { transform: scale(0.98); }
         .btn-pass-all { background-color: #218838; }
         .btn-fail-all { background-color: #6c757d; }
         .btn-help { background-color: #17a2b8; } 
-        .table-container {
-            position: relative;
-            background-color: white;
-        }
-        table.main-table {
-            width: 100%;        
-            border-collapse: collapse; 
-            table-layout: fixed; 
-        }
-        .main-table thead th {
-            /* 移除 position: sticky; 與 top: 0; 以取消置頂效果 */
-            background-color: #6c757d; 
-            color: white;
-            height: 45px; 
-            border: 1px solid #999;
-            font-size: 1rem;
-            box-shadow: 0 2px 2px rgba(0,0,0,0.1);
-        }
-        .main-table td {
-            border: 1px solid #999;
-            text-align: center; vertical-align: middle;
-            height: 55px;
-            padding: 2px;
-            color: #333;
-            overflow: hidden; 
-        }
+        .btn-cloud { background-color: #3b82f6; }
+        .btn-admin { background-color: #6366f1; }
+        .table-container { position: relative; background-color: white; }
+        table.main-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .main-table thead th { background-color: #6c757d; color: white; height: 45px; border: 1px solid #999; font-size: 1rem; box-shadow: 0 2px 2px rgba(0,0,0,0.1); }
+        .main-table td { border: 1px solid #999; text-align: center; vertical-align: middle; height: 55px; padding: 2px; color: #333; overflow: hidden; }
         .col-cat-major { writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; font-weight: 800; font-size: 1rem; color: #000; }
         .col-cat-minor { font-weight: bold; font-size: 1rem; line-height: 1.3; padding: 0 4px; word-wrap: break-word; }
         .col-name { text-align: left !important; padding-left: 8px !important; font-weight: bold; background-color: #fff; font-size: 1rem; white-space: normal; line-height: 1.4; }
         .col-sem { background-color: #fff; }
-        .bg-dept-main { background-color: #ff9999; }
-        .bg-dept-sub { background-color: #ffcccc; }
-        .bg-sch-req-main { background-color: #99ff99; }
-        .bg-sch-req-sub { background-color: #ccffcc; }
-        .bg-sch-opt-main { background-color: #9999ff; }
-        .bg-sch-opt-sub { background-color: #ccccff; }
+        .bg-dept-main { background-color: #ff9999 !important; }
+        .bg-dept-sub { background-color: #ffcccc !important; }
+        .bg-sch-req-main { background-color: #99ff99 !important; }
+        .bg-sch-req-sub { background-color: #ccffcc !important; }
+        .bg-sch-opt-main { background-color: #9999ff !important; }
+        .bg-sch-opt-sub { background-color: #ccccff !important; }
         .toggle-checkbox { display: none; }
-        .score-label {
-            display: flex; align-items: center; justify-content: center;
-            width: 100%; height: 100%;
-            cursor: pointer; font-weight: bold; font-size: 1.5em; 
-            position: relative; user-select: none;
-        }
+        .score-label { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; cursor: pointer; font-weight: bold; font-size: 1.5em; position: relative; user-select: none; }
         .toggle-checkbox:checked + .score-label { color: #000; background-color: #fff; }
-        .toggle-checkbox:checked + .score-label::after {
-            content: '✔'; font-size: 0.8em; color: #28a745; font-weight: 900;
-            position: absolute; right: 2px; top: 2px;
-        }
-        .toggle-checkbox:not(:checked) + .score-label {
-            background-color: #fff5f5; color: #dc3545; box-shadow: inset 0 0 0 1px #ffdce0; 
-        }
+        .toggle-checkbox:checked + .score-label::after { content: '✔'; font-size: 0.8em; color: #28a745; font-weight: 900; position: absolute; right: 2px; top: 2px; }
+        .toggle-checkbox:not(:checked) + .score-label { background-color: #fff5f5; color: #dc3545; box-shadow: inset 0 0 0 1px #ffdce0; }
         .zero-score { color: #e0e0e0; font-size: 1em; background: #fafafa; }
-        .modal-overlay {
-            display: none; 
-            position: fixed; 
-            z-index: 2000; 
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.6); 
-            backdrop-filter: blur(2px); 
-            align-items: center; justify-content: center;
-            animation: fadeIn 0.2s;
-        }
-        .modal-content {
-            background-color: #fff;
-            width: 90%; max-width: 500px;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            position: relative;
-            max-height: 85vh;
-            overflow-y: auto; 
-            animation: scaleUp 0.2s;
-            box-sizing: border-box;
-        }
-        .modal-header { 
-            font-size: 1.4rem; font-weight: bold; 
-            margin-bottom: 16px; border-bottom: 2px solid #eee; padding-bottom: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .modal-overlay { display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(2px); align-items: center; justify-content: center; animation: fadeIn 0.2s; }
+        .modal-content { background-color: #fff; width: 90%; max-width: 500px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; max-height: 85vh; overflow-y: auto; animation: scaleUp 0.2s; box-sizing: border-box; }
+        .modal-header { font-size: 1.4rem; font-weight: bold; margin-bottom: 16px; border-bottom: 2px solid #eee; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .close-modal-btn { font-size: 2rem; color: #aaa; cursor: pointer; line-height: 1; padding: 0 5px; }
         .modal-body { font-size: 1.05rem; line-height: 1.7; color: #333; }
-        .modal-body ul.score-examples { padding-left: 0; list-style: none; margin: 20px 0; }
-        .modal-body ul.score-examples li { margin-bottom: 18px; display: flex; align-items: center; }
-        .modal-body p { margin-bottom: 8px; }
-        .modal-score-example {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px; height: 50px; 
-            border-radius: 6px;
-            font-weight: 800;
-            font-size: 1.6rem; 
-            margin-right: 20px; 
-            box-sizing: border-box; 
-            flex-shrink: 0; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .modal-score-pass {
-            color: #000;
-            background-color: #fff;
-            border: 2px solid #eee; 
-            position: relative;
-        }
-        .modal-score-pass::after {
-            content: '✔'; font-size: 0.6em; color: #28a745; font-weight: 900;
-            position: absolute; right: 3px; top: 2px; line-height: 1;
-        }
-        .modal-score-fail {
-            background-color: #fff5f5;
-            color: #dc3545;
-            border: 2px solid #ffdce0;
-            box-shadow: none;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 6px 14px;      
-            font-size: 1.3rem;      
-            font-weight: 900;       
-            border-radius: 8px;     
-            margin-right: 12px;     
-            vertical-align: middle; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            line-height: 1.2;
-        }
+        .modal-score-example { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 50px; border-radius: 6px; font-weight: 800; font-size: 1.6rem; margin-right: 20px; box-sizing: border-box; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .modal-score-pass { color: #000; background-color: #fff; border: 2px solid #eee; }
+        .modal-score-pass::after { content: '✔'; font-size: 0.6em; color: #28a745; font-weight: 900; position: absolute; right: 3px; top: 2px; line-height: 1; }
+        .modal-score-fail { background-color: #fff5f5; color: #dc3545; border: 2px solid #ffdce0; }
+        .status-badge { display: inline-block; padding: 6px 14px; font-size: 1.3rem; font-weight: 900; border-radius: 8px; margin-right: 12px; vertical-align: middle; box-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.2; }
         .badge-green { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
-        .badge-red   { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
-        .modal-body ul.status-list {
-            padding-left: 0;
-            list-style: none;
-            margin-top: 15px;
-        }
-        .modal-body ul.status-list li {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-        .close-modal-btn {
-            font-size: 2rem; color: #aaa; cursor: pointer;
-            line-height: 1; padding: 0 5px;
-        }
-        .close-modal-btn:hover { color: #000; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .badge-red { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .admin-backend { display: none; padding: 20px; background: white; margin: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .admin-header { font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; color: #333; border-left: 6px solid #6366f1; padding-left: 15px; }
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th, .admin-table td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
+        .admin-table th { background: #f8f9fa; color: #666; font-size: 0.9rem; }
+        .btn-mini { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; color: white; font-weight: bold; margin-right: 5px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        .admin-edit-banner { display: none; background: #6366f1; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin: 10px; }
+        #msgBox { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 50px; color: white; font-weight: bold; display: none; z-index: 6000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @media (max-height: 500px) {
-            .section-dashboard { padding: 4px; }
-            .status-bar { font-size: 1rem; padding: 4px; margin-bottom: 5px; line-height: 1.2; }
-            .result-table td { height: 32px; font-size: 1.2rem; }
-            .result-table th { padding: 2px; font-size: 0.8rem; }
-            .result-table small { display: inline; margin-left: 4px; }
-            .btn-group { margin-top: 5px; }
-            .action-btn { padding: 6px; font-size: 0.9rem; }
-            .main-table td { height: 40px; font-size: 0.95rem; }
-            .score-label { font-size: 1.3em; }
-        }
+        @media (max-height: 500px) { .section-dashboard { padding: 4px; } .status-bar { font-size: 1rem; padding: 4px; margin-bottom: 5px; line-height: 1.2; } .result-table td { height: 32px; font-size: 1.2rem; } .result-table th { padding: 2px; font-size: 0.8rem; } .btn-group { margin-top: 5px; } .action-btn { padding: 6px; font-size: 0.9rem; } .main-table td { height: 40px; font-size: 0.95rem; } }
     </style>
 </head>
 <body>
-    <div id="dashboardSection" class="section-dashboard">
+    <div id="msgBox"></div>
+    <div id="statusHeader" class="section-dashboard" style="box-shadow: none; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+        <div id="userStatusDisplay" style="font-size: 0.8rem; color: #888; text-align: right; margin-bottom: 5px;">訪客模式 (<a href="javascript:void(0)" onclick="toggleUIModal(true, 'authModal')">登入存檔</a>)</div>
+    </div>
+    <div id="dashboardSection" class="section-dashboard" style="margin-top: -5px;">
+        <div id="adminEditBanner" class="admin-edit-banner">⚠️ 修改模式：正在編輯 <span id="targetStudentName">學生</span> 的資料 | <a href="javascript:void(0)" onclick="exitAdminEditMode()" style="color:white; text-decoration:underline;">取消返回列表</a></div>
         <div id="finalStatus" class="status-bar status-fail">計算中...</div>
         <table class="result-table">
             <thead>
-                <tr>
-                    <th>總學分<small>(160)</small></th>
-                    <th>部定必修<small id="dept-limit-text">(-)</small></th>
-                    <th>專業實習<small>(60)</small></th>
-                    <th>實習<small>(45)</small></th>
-                </tr>
+                <tr><th>總學分<small>(160)</small></th><th>部定必修<small id="dept-limit-text">(-)</small></th><th>專業實習<small>(60)</small></th><th>實習<small>(45)</small></th></tr>
             </thead>
             <tbody>
-                <tr>
-                    <td id="cell-total">0</td>
-                    <td id="cell-dept">0</td>
-                    <td id="cell-prof-prac">0</td>
-                    <td id="cell-prac">0</td>
-                </tr>
+                <tr><td id="cell-total">0</td><td id="cell-dept">0</td><td id="cell-prof-prac">0</td><td id="cell-prac">0</td></tr>
             </tbody>
         </table>
         <div class="btn-group">
-            <button class="action-btn btn-help" onclick="toggleModal(true)">使用說明</button>
+            <button class="action-btn btn-help" onclick="toggleUIModal(true, 'helpModal')">使用說明</button>
+            <button id="saveBtn" class="action-btn btn-cloud" onclick="saveToCloud()">雲端存檔</button>
             <button class="action-btn btn-pass-all" onclick="setAllStatus(true)">全部及格</button>
             <button class="action-btn btn-fail-all" onclick="setAllStatus(false)">學分歸零</button>
         </div>
     </div>
+    <div id="adminBackend" class="admin-backend">
+        <div class="admin-header">資料管理</div>
+        <div style="overflow-x:auto">
+            <table class="admin-table">
+                <colgroup><col style="width: 25%;"><col style="width: 25%;"><col style="width: 50%;"></colgroup>
+                <thead><tr><th>姓名</th><th>學號</th><th>操作</th></tr></thead>
+                <tbody id="adminListBody"></tbody>
+            </table>
+        </div>
+    </div>
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content" style="max-width:350px;">
+            <div class="modal-header"><span id="authTitle">帳號登入</span><span class="close-modal-btn" onclick="toggleUIModal(false, 'authModal')">&times;</span></div>
+            <div class="input-group"><label>學號</label><input type="text" id="authID" placeholder="請輸入學號"></div>
+            <div id="regFields" style="display:none"><div class="input-group"><label>姓名</label><input type="text" id="authName" placeholder="請輸入真實姓名"></div></div>
+            <div class="input-group"><label>密碼</label><input type="password" id="authPassword" placeholder="請輸入密碼"></div>
+            <button class="action-btn btn-cloud" style="width:100%; margin-top:10px;" onclick="handleAuth()">確認</button>
+            <div id="authSwitchLink" style="text-align:center; margin-top:15px; font-size:0.9rem; color:#666; cursor:pointer; text-decoration:underline" onclick="switchAuthMode()">尚未有帳號？點此註冊</div>
+        </div>
+    </div>
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-content" style="max-width:400px;">
+            <div class="modal-header"><span>個人資料管理</span><span class="close-modal-btn" onclick="toggleUIModal(false, 'profileModal')">&times;</span></div>
+            <div class="input-group"><label>帳號 (不可修改)</label><input type="text" id="profAccount" disabled style="background:#eee;"></div>
+            <div class="input-group"><label>姓名</label><input type="text" id="profName" placeholder="請輸入姓名"></div>
+            <div class="input-group"><label>導師 (不可修改)</label><input type="text" id="profTutor" disabled style="background:#eee;"></div>
+            <div class="input-group"><label>更改密碼 (不改則留空)</label><input type="password" id="profPassword"></div>
+            <button class="action-btn btn-admin" style="width:100%;" onclick="updateProfile()">儲存修改</button>
+        </div>
+    </div>
+    <div id="adminUserModal" class="modal-overlay">
+        <div class="modal-content" style="max-width:400px;">
+            <div class="modal-header"><span>更改帳號資料</span><span class="close-modal-btn" onclick="toggleUIModal(false, 'adminUserModal')">&times;</span></div>
+            <input type="hidden" id="editUserId">
+            <div class="input-group"><label>學號 (僅管理員可更正)</label><input type="text" id="editUserSid"></div>
+            <div class="input-group"><label>姓名</label><input type="text" id="editUserName"></div>
+            <div class="input-group"><label>導師(未來開放導師權限)</label><input type="text" id="editUserTutor"></div>
+            <div class="input-group"><label>重設密碼 (留空則不改)</label><input type="password" id="editUserPwd"></div>
+            <p style="font-size:0.75rem; color:#f44336;">註：此處修改僅影響顯示資料，帳號密碼請至系統後台管理。</p>
+            <button class="action-btn btn-admin" style="width:100%;" onclick="saveAdminUserEdit()">儲存帳號修改</button>
+        </div>
+    </div>
     <div id="helpModal" class="modal-overlay" onclick="handleOutsideClick(event)">
         <div class="modal-content">
-            <div class="modal-header">
-                <span>使用說明</span>
-                <span class="close-modal-btn" onclick="toggleModal(false)">&times;</span>
-            </div>
+            <div class="modal-header"><span>使用說明</span><span class="close-modal-btn" onclick="toggleUIModal(false, 'helpModal')">&times;</span></div>
             <div class="modal-body">
                 <p>小孩們~歡迎來到殘酷的畢業檢核表<br>請依自己的成績切換狀態</p>
                 <p style="margin-top: 15px; font-weight:bold;">切換狀態：點擊表格中的數字</p>
-                <ul class="score-examples">
-                    <li>
-                        <span class="modal-score-example modal-score-pass">3</span>
-                        <span>代表該科 <strong>及　格</strong> (獲得學分)</span>
-                    </li>
-                    <li>
-                        <span class="modal-score-example modal-score-fail">3</span>
-                        <span>代表該科 <strong>不及格</strong> (未獲學分)</span>
-                    </li>
+                <ul style="list-style:none; padding:0; margin:15px 0;">
+                    <li style="margin-bottom:12px; display:flex; align-items:center;"><span class="modal-score-example modal-score-pass">3</span><span>代表該科 <strong>及　格</strong> (獲得學分)</span></li>
+                    <li style="display:flex; align-items:center;"><span class="modal-score-example modal-score-fail">3</span><span>代表該科 <strong>不及格</strong> (未獲學分)</span></li>
                 </ul>
-                <p style="margin-top: 25px; font-weight:bold;">上方儀表板說明</p>
-                
-                <ul class="status-list">
-                    <li>
-                        <span class="status-badge badge-green">綠底</span> 
-                        <span>代表該項目已達畢業門檻</span>
-                    </li>
-                    <li>
-                        <span class="status-badge badge-red">紅底</span> 
-                        <span>代表該項目未達畢業門檻</span>
-                    </li>
+                <p style="margin-top: 20px; font-weight:bold;">上方儀表板說明</p>
+                <ul style="list-style:none; padding:0; margin:15px 0;">
+                    <li style="margin-bottom:10px; display:flex; align-items:center;"><span class="status-badge badge-green">綠底</span><span>代表該項目已達畢業門檻</span></li>
+                    <li style="display:flex; align-items:center;"><span class="status-badge badge-red">紅底</span><span>代表該項目未達畢業門檻</span></li>
                 </ul>
-                <p style="font-size:0.95rem; color:#666; margin-top:25px; border-top:1px solid #eee; padding-top:15px; text-align: center;">
-                    記住哦~系統只是試算 最終結果依教務處註冊組為準<br>by 最熟悉的陌生人製作
-                </p>
+                <p style="font-size:0.95rem; color:#666; margin-top:25px; border-top:1px solid #eee; padding-top:15px; text-align: center;">記住哦~系統只是試算 最終結果依教務處註冊組為準<br>by 最熟悉的陌生人製作</p>
             </div>
         </div>
     </div>
     <div id="tableContainer" class="table-container">
         <table class="main-table">
-            <colgroup>
-                <col style="width: 7%;">   
-                <col style="width: 18%;">  
-                <col style="width: 25%;">  
-                <col style="width: 8.33%;"> 
-                <col style="width: 8.33%;"> 
-                <col style="width: 8.33%;"> 
-                <col style="width: 8.33%;"> 
-                <col style="width: 8.33%;"> 
-                <col style="width: 8.33%;"> 
-            </colgroup>
-            <thead>
-                <tr>
-                    <th colspan="2">屬性</th>
-                    <th>科目名稱</th>
-                    <th>一上</th><th>一下</th>
-                    <th>二上</th><th>二下</th>
-                    <th>三上</th><th>三下</th>
-                </tr>
-            </thead>
+            <colgroup><col style="width: 7%;"><col style="width: 18%;"><col style="width: 25%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"></colgroup>
+            <thead><tr><th colspan="2">屬性</th><th>科目名稱</th><th>一上</th><th>一下</th><th>二上</th><th>二下</th><th>三上</th><th>三下</th></tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
 <script>
-    const curriculum = [
-        { cat: "dept", type: 1, name: "國語文", credits: [3,3,3,3,2,2] },
-        { cat: "dept", type: 1, name: "英語文", credits: [2,2,2,2,2,2] },
-        { cat: "dept", type: 1, name: "閩南語文", credits: [1,1,0,0,0,0] },
-        { cat: "dept", type: 1, name: "數學", credits: [3,3,0,0,0,0] },
-        { cat: "dept", type: 1, name: "歷史", credits: [0,2,0,0,0,0] }, 
-        { cat: "dept", type: 1, name: "地理", credits: [2,0,0,0,0,0] }, 
-        { cat: "dept", type: 1, name: "公民與社會", credits: [0,0,0,0,0,2] }, 
-        { cat: "dept", type: 1, name: "物理", credits: [2,0,0,0,0,0] }, 
-        { cat: "dept", type: 1, name: "化學", credits: [0,1,0,0,0,0] }, 
-        { cat: "dept", type: 1, name: "生物", credits: [0,1,0,0,0,0] }, 
-        { cat: "dept", type: 1, name: "音樂", credits: [1,1,0,0,0,0] },
-        { cat: "dept", type: 1, name: "美術", credits: [1,1,0,0,0,0] },
-        { cat: "dept", type: 1, name: "生涯規劃", credits: [0,0,0,0,1,1] },
-        { cat: "dept", type: 1, name: "資訊科技", credits: [0,2,0,0,0,0] }, 
-        { cat: "dept", type: 1, name: "健康與護理", credits: [1,1,0,0,0,0] },
-        { cat: "dept", type: 1, name: "體育", credits: [2,2,2,2,2,2] },
-        { cat: "dept", type: 1, name: "全民國防教育", credits: [1,1,0,0,0,0] },
-        { cat: "dept", type: 2, name: "商業概論", credits: [2,2,0,0,0,0] },
-        { cat: "dept", type: 2, name: "數位科技概論", credits: [2,2,0,0,0,0] },
-        { cat: "dept", type: 2, name: "會計學", credits: [3,3,2,2,0,0] },
-        { cat: "dept", type: 2, name: "經濟學", credits: [0,0,4,4,0,0] },
-        { cat: "dept", type: 3, name: "數位科技應用", credits: [0,0,2,2,0,0] },
-        { cat: "dept", type: 3, name: "商業溝通", credits: [0,0,0,0,0,2] },
-        { cat: "dept", type: 3, name: "程式語言與設計", credits: [2,2,0,0,0,0] },
-        { cat: "dept", type: 3, name: "多媒體製作與應用", credits: [0,0,3,3,0,0] },
-        { cat: "dept", type: 3, name: "資料庫應用", credits: [0,0,0,0,2,2] },
-        { cat: "sch_req", type: 1, name: "各類文選選讀", credits: [0,0,0,0,1,1] },
-        { cat: "sch_req", type: 1, name: "英文會話", credits: [1,1,0,0,0,0] },
-        { cat: "sch_req", type: 1, name: "英文閱讀初階", credits: [0,0,1,1,0,0] },
-        { cat: "sch_req", type: 1, name: "英文閱讀進階", credits: [0,0,0,0,1,1] },
-        { cat: "sch_req", type: 1, name: "數學(校定)", credits: [0,0,3,3,0,0] },
-        { cat: "sch_req", type: 2, name: "計算機探究", credits: [0,0,0,0,4,4] },
-        { cat: "sch_req", type: 2, name: "商業專論", credits: [0,0,0,0,2,2] },
-        { cat: "sch_req", type: 3, name: "記帳實務", credits: [1,1,0,0,0,0] },
-        { cat: "sch_req", type: 3, name: "專題實作", credits: [0,0,0,2,2,0] }, 
-        { cat: "sch_opt", type: 1, name: "數學演習", credits: [0,0,0,0,3,3] },
-        { cat: "sch_opt", type: 3, name: "文書處理", credits: [2,0,0,0,0,0] },
-        { cat: "sch_opt", type: 3, name: "專題前導", credits: [0,0,2,0,0,0] },
-        { cat: "sch_opt", type: 3, name: "軟體應用", credits: [0,0,3,0,0,0] },
-        { cat: "sch_opt", type: 3, name: "會計實務", credits: [0,0,2,2,4,4] },
-        { cat: "sch_opt", type: 3, name: "經濟應用實務", credits: [0,0,0,0,4,4] },
-        { cat: "sch_opt", type: 3, name: "同科單班(2選1)<br>網頁規劃實務/進階軟體應用", credits: [0,0,0,3,0,0] }, 
-        { cat: "sch_opt", type: 3, name: "同科單班(2選1)<br>進階程式設計/電腦繪圖實務", credits: [0,0,0,0,2,0] }, 
-        { cat: "sch_opt", type: 3, name: "跨群選修(6選1)", credits: [0,0,2,2,0,0] } 
-    ];
-
-    const mapping = {
-        cat: {
-            "dept": { text: "部定必修", class: "bg-dept-main", subClass: "bg-dept-sub" },
-            "sch_req": { text: "校定必修", class: "bg-sch-req-main", subClass: "bg-sch-req-sub" },
-            "sch_opt": { text: "校定選修", class: "bg-sch-opt-main", subClass: "bg-sch-opt-sub" }
-        },
-        type: {
-            1: "一般科目",
-            2: "專業科目",
-            3: "實習科目"
-        }
-    };
-
-    let DEPT_THRESHOLD = 0;
-
-    function initThresholds() {
-        let maxDeptCredits = 0;
-        curriculum.forEach(item => {
-            if (item.cat === 'dept') {
-                maxDeptCredits += item.credits.reduce((a, b) => a + b, 0);
-            }
-        });
-        DEPT_THRESHOLD = Math.round(maxDeptCredits * 0.85);
-        document.getElementById('dept-limit-text').innerText = `(${DEPT_THRESHOLD})`;
+    const SB_URL = "https://tsavuxtqwfugoraomoyc.supabase.co", SB_KEY = "sb_publishable_ojrdIB0TeCnl8eZXbzWsdQ_2W3JB3xT";
+    const sb = supabase.createClient(SB_URL, SB_KEY);
+    let userDBRecord = null;
+    const curriculum = [{cat:"dept",type:1,name:"國語文",credits:[3,3,3,3,2,2]},{cat:"dept",type:1,name:"英語文",credits:[2,2,2,2,2,2]},{cat:"dept",type:1,name:"閩南語文",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"數學",credits:[3,3,0,0,0,0]},{cat:"dept",type:1,name:"歷史",credits:[0,2,0,0,0,0]},{cat:"dept",type:1,name:"地理",credits:[2,0,0,0,0,0]},{cat:"dept",type:1,name:"公民與社會",credits:[0,0,0,0,0,2]},{cat:"dept",type:1,name:"物理",credits:[2,0,0,0,0,0]},{cat:"dept",type:1,name:"化學",credits:[0,1,0,0,0,0]},{cat:"dept",type:1,name:"生物",credits:[0,1,0,0,0,0]},{cat:"dept",type:1,name:"音樂",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"美術",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"生涯規劃",credits:[0,0,0,0,1,1]},{cat:"dept",type:1,name:"資訊科技",credits:[0,2,0,0,0,0]},{cat:"dept",type:1,name:"健康與護理",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"體育",credits:[2,2,2,2,2,2]},{cat:"dept",type:1,name:"全民國防教育",credits:[1,1,0,0,0,0]},{cat:"dept",type:2,name:"商業概論",credits:[2,2,0,0,0,0]},{cat:"dept",type:2,name:"數位科技概論",credits:[2,2,0,0,0,0]},{cat:"dept",type:2,name:"會計學",credits:[3,3,2,2,0,0]},{cat:"dept",type:2,name:"經濟學",credits:[0,0,4,4,0,0]},{cat:"dept",type:3,name:"數位科技應用",credits:[0,0,2,2,0,0]},{cat:"dept",type:3,name:"商業溝通",credits:[0,0,0,0,0,2]},{cat:"dept",type:3,name:"程式語言與設計",credits:[2,2,0,0,0,0]},{cat:"dept",type:3,name:"多媒體製作與應用",credits:[0,0,3,3,0,0]},{cat:"dept",type:3,name:"資料庫應用",credits:[0,0,0,0,2,2]},{cat:"sch_req",type:1,name:"各類文選選讀",credits:[0,0,0,0,1,1]},{cat:"sch_req",type:1,name:"英文會話",credits:[1,1,0,0,0,0]},{cat:"sch_req",type:1,name:"英文閱讀初階",credits:[0,0,1,1,0,0]},{cat:"sch_req",type:1,name:"英文閱讀進階",credits:[0,0,0,0,1,1]},{cat:"sch_req",type:1,name:"數學(校定)",credits:[0,0,3,3,0,0]},{cat:"sch_req",type:2,name:"計算機探究",credits:[0,0,0,0,4,4]},{cat:"sch_req",type:2,name:"商業專論",credits:[0,0,0,0,2,2]},{cat:"sch_req",type:3,name:"記帳實務",credits:[1,1,0,0,0,0]},{cat:"sch_req",type:3,name:"專題實作",credits:[0,0,0,2,2,0]},{cat:"sch_opt",type:1,name:"數學演習",credits:[0,0,0,0,3,3]},{cat:"sch_opt",type:3,name:"文書處理",credits:[2,0,0,0,0,0]},{cat:"sch_opt",type:3,name:"專題前導",credits:[0,0,2,0,0,0]},{cat:"sch_opt",type:3,name:"軟體應用",credits:[0,0,3,0,0,0]},{cat:"sch_opt",type:3,name:"會計實務",credits:[0,0,2,2,4,4]},{cat:"sch_opt",type:3,name:"經濟應用實務",credits:[0,0,0,0,4,4]},{cat:"sch_opt",type:3,name:"同科單班(2選1)<br>網頁規劃實務/進階軟體應用",credits:[0,0,0,3,0,0]},{cat:"sch_opt",type:3,name:"同科單班(2選1)<br>進階程式設計/電腦繪圖實務",credits:[0,0,0,0,2,0]},{cat:"sch_opt",type:3,name:"跨群選修(6選1)",credits:[0,0,2,2,0,0]}];
+    const mapping = { cat: { "dept": { text: "部定必修", class: "bg-dept-main", subClass: "bg-dept-sub" }, "sch_req": { text: "校定必修", class: "bg-sch-req-main", subClass: "bg-sch-req-sub" }, "sch_opt": { text: "校定選修", class: "bg-sch-opt-main", subClass: "bg-sch-opt-sub" } }, type: { 1: "一般科目", 2: "專業科目", 3: "實習科目" } };
+    let DEPT_THRESHOLD = 0, currentUser = null, editingStudentId = null;
+    function initThresholds() { let maxDept = 0; curriculum.forEach(i => { if(i.cat==='dept') maxDept += i.credits.reduce((a,b)=>a+b,0); }); DEPT_THRESHOLD = Math.round(maxDept * 0.85); const el = document.getElementById('dept-limit-text'); if(el) el.innerText = `(${DEPT_THRESHOLD})`; }
+    function toggleUIModal(show, id) { const el = document.getElementById(id); if(el) el.style.display = show ? 'flex' : 'none'; if(show && id==='adminModal') fetchAdminList(); }
+    function handleOutsideClick(event) { if (event.target.classList.contains('modal-overlay')) event.target.style.display = 'none'; }
+    function showMsg(txt, type='info') { const b = document.getElementById('msgBox'); b.innerText = txt; b.style.background = type==='error'?'#dc3545':'#28a745'; b.style.display = 'block'; setTimeout(()=>b.style.display='none', 2500); }
+    async function handleAuth() { const sid = document.getElementById('authID').value.trim(); const pwd = document.getElementById('authPassword').value; const email = `${sid}@school.edu.tw`; try { if(document.getElementById('regFields').style.display === 'block') { const name = document.getElementById('authName').value.trim(); if(!name) throw new Error("請輸入姓名"); const { error } = await sb.auth.signUp({ email, password: pwd, options: { data: { full_name: name, student_id: sid, role: 'student', tutor: '未設定' } } }); if(error) throw error; showMsg("註冊成功，請登入吧"); switchAuthMode(); } else { const { error } = await sb.auth.signInWithPassword({ email, password: pwd }); if(error) throw error; showMsg("登入成功"); toggleUIModal(false, 'authModal'); } } catch (e) { showMsg(e.message, 'error'); } }
+    function switchAuthMode() { 
+        const isReg = document.getElementById('regFields').style.display === 'none'; 
+        document.getElementById('regFields').style.display = isReg ? 'block' : 'none'; 
+        document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '帳號登入';
+        document.getElementById('authSwitchLink').innerText = isReg ? '已有帳號？點此登入吧' : '尚未有帳號？點此註冊';
     }
-
-    function toggleModal(show) {
-        const modal = document.getElementById('helpModal');
-        modal.style.display = show ? 'flex' : 'none';
-    }
-
-    function handleOutsideClick(event) {
-        const modal = document.getElementById('helpModal');
-        if (event.target === modal) toggleModal(false);
-    }
-
-    function adjustScrollbarPadding() {
+    sb.auth.onAuthStateChange((event, session) => { currentUser = session ? session.user : null; updateUI(); });
+    function updateUI() { 
+        const tableContainer = document.getElementById('tableContainer');
+        const adminBackend = document.getElementById('adminBackend');
         const dashboard = document.getElementById('dashboardSection');
-        dashboard.style.paddingRight = '10px';
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById("tableBody");
-        tbody.innerHTML = ""; 
-        const countMap = {};
-        curriculum.forEach(item => {
-            if(!countMap[item.cat]) countMap[item.cat] = { total: 0, types: {} };
-            countMap[item.cat].total++;
-            if(!countMap[item.cat].types[item.type]) countMap[item.cat].types[item.type] = 0;
-            countMap[item.cat].types[item.type]++;
-        });
-
-        let renderedCatCount = {}; 
-        let renderedTypeCount = {};
-
-        curriculum.forEach((item, index) => {
-            const tr = document.createElement("tr");
-            if (!renderedCatCount[item.cat]) {
-                let tdCat = document.createElement("td");
-                tdCat.innerText = mapping.cat[item.cat].text;
-                tdCat.className = "col-cat-major " + mapping.cat[item.cat].class;
-                tdCat.rowSpan = countMap[item.cat].total;
-                tr.appendChild(tdCat);
-                renderedCatCount[item.cat] = true;
-                renderedTypeCount[item.cat] = {};
-            }
-            if (!renderedTypeCount[item.cat][item.type]) {
-                let tdType = document.createElement("td");
-                tdType.innerText = mapping.type[item.type];
-                tdType.className = "col-cat-minor " + mapping.cat[item.cat].subClass;
-                tdType.rowSpan = countMap[item.cat].types[item.type];
-                tr.appendChild(tdType);
-                renderedTypeCount[item.cat][item.type] = true;
-            }
-
-            let tdName = document.createElement("td");
-            tdName.innerHTML = item.name; 
-            tdName.className = "col-name";
-            tr.appendChild(tdName);
-
-            item.credits.forEach((credit, semIndex) => {
-                let td = document.createElement("td");
-                td.className = "col-sem";
-                if(credit > 0) {
-                    let uniqueID = `chk-${index}-${semIndex}`;
-                    let checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.className = "toggle-checkbox";
-                    checkbox.id = uniqueID;
-                    checkbox.checked = true;
-                    checkbox.dataset.val = credit;
-                    checkbox.dataset.cat = item.cat;
-                    checkbox.dataset.type = item.type;
-                    checkbox.onchange = calculate; 
-
-                    let label = document.createElement("label");
-                    label.className = "score-label";
-                    label.htmlFor = uniqueID; 
-                    label.innerText = credit;
-
-                    td.appendChild(checkbox);
-                    td.appendChild(label);
-                } else {
-                    td.innerText = "-";
-                    td.className = "zero-score";
-                }
-                tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-        });
-        setTimeout(adjustScrollbarPadding, 0);
-    }
-
-    function calculate() {
-        let total = 0, deptTotal = 0, profPrac = 0, pracOnly = 0;
-        const checkboxes = document.querySelectorAll(".toggle-checkbox:checked");
-        
-        checkboxes.forEach(input => {
-            let val = parseInt(input.dataset.val);
-            let cat = input.dataset.cat;
-            let type = parseInt(input.dataset.type);
-            total += val;
-            if (cat === 'dept') deptTotal += val;
-            if (type === 2 || type === 3) profPrac += val;
-            if (type === 3) pracOnly += val;
-        });
-
-        updateCell("total", total, 160);
-        updateCell("dept", deptTotal, DEPT_THRESHOLD);
-        updateCell("prof-prac", profPrac, 60);
-        updateCell("prac", pracOnly, 45);
-
-        const finalStatus = document.getElementById("finalStatus");
-        if(total >= 160 && deptTotal >= DEPT_THRESHOLD && profPrac >= 60 && pracOnly >= 45) {
-            finalStatus.innerText = "唉呦不錯喔~你竟然可以畢業";
-            finalStatus.className = "status-bar status-pass";
+        const userStatusDisplay = document.getElementById('userStatusDisplay');
+        if(currentUser) {
+            const m = currentUser.user_metadata;
+            const role = m.role || 'student';
+            const displayName = userDBRecord ? userDBRecord.full_name : m.full_name;
+            userStatusDisplay.innerHTML = `你好，${displayName} (${role==='admin'?'管理員':'學生'}) | <a href="javascript:void(0)" onclick="openProfile()">個人資料</a> | <a href="javascript:void(0)" onclick="sb.auth.signOut(); location.reload();">登出</a>`;
+            if(role==='admin') {
+                if(!editingStudentId) { dashboard.style.display='none'; tableContainer.style.display='none'; adminBackend.style.display='block'; fetchAdminList(); } 
+                else { dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; }
+            } else { dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; loadFromCloud(); }
         } else {
-            finalStatus.innerText = "你不能畢業欸~好可憐";
-            finalStatus.className = "status-bar status-fail";
+            userStatusDisplay.innerHTML = `訪客模式 (<a href="javascript:void(0)" onclick="toggleUIModal(true, 'authModal')">登入存檔</a>)`;
+            dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none';
         }
     }
-
-    function updateCell(id, current, limit) {
-        const cell = document.getElementById(`cell-${id}`);
-        if(current >= limit) {
-            cell.innerHTML = `<span style="color:#155724;">${current}</span>`;
-            cell.style.backgroundColor = "#d4edda"; 
-            cell.style.borderColor = "#c3e6cb";
-        } else {
-            cell.innerHTML = `<span style="color:#721c24;">${current}</span>`;
-            cell.style.backgroundColor = "#f8d7da"; 
-            cell.style.borderColor = "#f5c6cb";
-        }
+    function openProfile() { 
+        const m = userDBRecord || currentUser.user_metadata;
+        document.getElementById('profAccount').value = m.student_id || ''; 
+        document.getElementById('profName').value = m.full_name || ''; 
+        document.getElementById('profTutor').value = m.tutor || '未設定'; 
+        document.getElementById('profPassword').value = '';
+        toggleUIModal(true, 'profileModal'); 
     }
-
-    function setAllStatus(isPass) {
-        const checkboxes = document.querySelectorAll(".toggle-checkbox");
-        checkboxes.forEach(chk => chk.checked = isPass);
-        calculate();
+    async function updateProfile() { 
+        const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value;
+        const d = { data: { full_name: n } }; if(p) d.password = p;
+        try {
+            await sb.auth.updateUser(d);
+            await sb.from('grad_checks').update({ full_name: n }).eq('id', currentUser.id);
+            showMsg("資料已更新！"); 
+            await loadFromCloud(); 
+            toggleUIModal(false, 'profileModal');
+        } catch (e) { showMsg(e.message, 'error'); } 
     }
-
-    window.addEventListener('resize', adjustScrollbarPadding);
-    
-    initThresholds();
-    renderTable();
-    calculate();
+    async function saveToCloud() { if(!currentUser) return toggleUIModal(true, 'authModal'); const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked); const res = calculateStats(); const targetId = editingStudentId || currentUser.id; const data = { id: targetId, credits_json: checks, total_credits: res.total, is_graduated: res.pass, updated_at: new Date() }; if(!editingStudentId && userDBRecord) { data.full_name = userDBRecord.full_name; data.student_id = userDBRecord.student_id; data.tutor = userDBRecord.tutor; } const { error } = await sb.from('grad_checks').upsert(data); if(error) showMsg(error.message, 'error'); else showMsg("同步成功！"); }
+    async function deleteStudentData(id, name) { if(!confirm(`確定要註銷「${name}」嗎？`)) return; await sb.from('grad_checks').delete().eq('id', id); showMsg("已註銷"); fetchAdminList(); }
+    async function enterAdminEditMode(id, name) { editingStudentId = id; document.getElementById('adminEditBanner').style.display = 'block'; document.getElementById('targetStudentName').innerText = name; updateUI(); loadFromCloud(id); }
+    function exitAdminEditMode() { editingStudentId = null; document.getElementById('adminEditBanner').style.display = 'none'; updateUI(); }
+    async function openAdminUserEdit(id, sid, name, tutor) { document.getElementById('editUserId').value = id; document.getElementById('editUserSid').value = sid; document.getElementById('editUserName').value = name; document.getElementById('editUserTutor').value = tutor || '未設定'; document.getElementById('editUserPwd').value = ''; toggleUIModal(true, 'adminUserModal'); }
+    async function saveAdminUserEdit() { const id = document.getElementById('editUserId').value, sid = document.getElementById('editUserSid').value, n = document.getElementById('editUserName').value, t = document.getElementById('editUserTutor').value; try { const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, tutor: t }).eq('id', id); if(error) throw error; showMsg("帳號資料已更新"); toggleUIModal(false, 'adminUserModal'); fetchAdminList(); } catch (e) { showMsg(e.message, 'error'); } }
+    async function loadFromCloud(tid = null) { const uid = tid || currentUser.id; const { data } = await sb.from('grad_checks').select('*').eq('id', uid).single(); if(data) { if(!tid) { userDBRecord = data; updateUI(); } if(data.credits_json) { document.querySelectorAll(".toggle-checkbox").forEach(c => c.checked = false); Object.keys(data.credits_json).forEach(id => { const el = document.getElementById(id); if(el) el.checked = data.credits_json[id]; }); calculate(); } } }
+    async function fetchAdminList() { const { data } = await sb.from('grad_checks').select('*'); const b = document.getElementById('adminListBody'); b.innerHTML = ""; if(data) data.forEach(s => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}', '${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit('${s.id}', '${s.student_id}', '${s.full_name}', '${s.tutor}')">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}', '${s.full_name}')">註銷帳號</button></td>`; b.appendChild(tr); }); }
+    function renderTable() { 
+        const tbody = document.getElementById("tableBody"); tbody.innerHTML = ""; 
+        const countMap = {}; curriculum.forEach(i => { if(!countMap[i.cat]) countMap[i.cat]={t:0, types:{}}; countMap[i.cat].t++; if(!countMap[i.cat].types[i.type]) countMap[i.cat].types[i.type]=0; countMap[i.cat].types[i.type]++; }); 
+        let rC = {}, rT = {}; 
+        curriculum.forEach((item, index) => { 
+            const tr = document.createElement("tr"); 
+            if(!rC[item.cat]) { 
+                let td = document.createElement("td"); td.innerText = mapping.cat[item.cat].text; 
+                td.className = "col-cat-major " + mapping.cat[item.cat].class; 
+                td.rowSpan = countMap[item.cat].t; tr.appendChild(td); rC[item.cat]=true; rT[item.cat]={}; 
+            } 
+            if(!rT[item.cat][item.type]) { 
+                let td = document.createElement("td"); td.innerText = mapping.type[item.type]; 
+                td.className = "col-cat-minor " + mapping.cat[item.cat].subClass; 
+                td.rowSpan = countMap[item.cat].types[item.type]; tr.appendChild(td); rT[item.cat][item.type]=true; 
+            } 
+            let tdN = document.createElement("td"); tdN.innerHTML = item.name; tdN.className = "col-name"; tr.appendChild(tdN); 
+            item.credits.forEach((c, sIdx) => { 
+                let td = document.createElement("td"); td.className = "col-sem"; 
+                if(c > 0) { 
+                    let id = `chk-${index}-${sIdx}`; 
+                    td.innerHTML = `<input type="checkbox" class="toggle-checkbox" id="${id}" data-val="${c}" data-cat="${item.cat}" data-type="${item.type}" onchange="calculate()" checked><label class="score-label" for="${id}">${c}</label>`; 
+                } else { td.innerText = "-"; td.className = "zero-score"; } tr.appendChild(td); 
+            }); tbody.appendChild(tr); 
+        }); 
+    }
+    function calculateStats() { let total = 0, dept = 0, prof = 0, prac = 0; document.querySelectorAll(".toggle-checkbox:checked").forEach(input => { let v = parseInt(input.dataset.val), c = input.dataset.cat, t = parseInt(input.dataset.type); total += v; if(c==='dept') dept += v; if(t==2||t==3) prof += v; if(t==3) prac += v; }); return { total, pass: (total >= 160 && dept >= DEPT_THRESHOLD && prof >= 60 && prac >= 45) }; }
+    function calculate() { const { total, pass } = calculateStats(); let deptVal = 0, profVal = 0, pracVal = 0; document.querySelectorAll(".toggle-checkbox:checked").forEach(input => { let v = parseInt(input.dataset.val), c = input.dataset.cat, t = parseInt(input.dataset.type); if(c==='dept') deptVal += v; if(t==2||t==3) profVal += v; if(t==3) pracVal += v; }); const cTotal = document.getElementById("cell-total"); if(cTotal) { cTotal.innerText = total; cTotal.style.backgroundColor = total >= 160 ? "#d4edda" : "#f8d7da"; } const cDept = document.getElementById("cell-dept"); if(cDept) { cDept.innerText = deptVal; cDept.style.backgroundColor = deptVal >= DEPT_THRESHOLD ? "#d4edda" : "#f8d7da"; } const cProf = document.getElementById("cell-prof-prac"); if(cProf) { cProf.innerText = profVal; cProf.style.backgroundColor = profVal >= 60 ? "#d4edda" : "#f8d7da"; } const cPrac = document.getElementById("cell-prac"); if(cPrac) { cPrac.innerText = pracVal; cPrac.style.backgroundColor = pracVal >= 45 ? "#d4edda" : "#f8d7da"; } const st = document.getElementById("finalStatus"); if(st) { st.innerText = pass ? "唉呦不錯喔~你竟然可以畢業" : "你不能畢業欸~好可憐"; st.className = "status-bar " + (pass ? "status-pass" : "status-fail"); } }
+    function setAllStatus(p) { document.querySelectorAll(".toggle-checkbox").forEach(chk => chk.checked = p); calculate(); }
+    initThresholds(); renderTable(); calculate();
 </script>
 </body>
 </html>
