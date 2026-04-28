@@ -66,8 +66,9 @@
         .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
         .admin-edit-banner { display: none; background: #6366f1; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin: 10px; }
         #msgBox { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 50px; color: white; font-weight: bold; display: none; z-index: 6000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @media (max-height: 500px) { .section-dashboard { padding: 4px; } .status-bar { font-size: 1rem; padding: 4px; margin-bottom: 5px; line-height: 1.2; } .result-table td { height: 32px; font-size: 1.2rem; } .result-table th { padding: 2px; font-size: 0.8rem; } .btn-group { margin-top: 5px; } .action-btn { padding: 6px; font-size: 0.9rem; } .main-table td { height: 40px; font-size: 0.95rem; } }
+        @media (max-height: 500px) { .section-dashboard { padding: 4px; } .status-bar { font-size: 1rem; padding: 4px; margin-bottom: 5px; line-height: 1.2; } .result-table td { height: 32px; font-size: 1.2rem; } .result-table th { padding: 2px; font-size: 0.8rem; } .btn-group { margin-top: 5px; } .action-btn { padding: 6px; font-size: 0.9rem; } .main-table td { height: 40px; font-size: 0.95rem; } .score-label { font-size: 1.3em; } }
     </style>
 </head>
 <body>
@@ -179,6 +180,14 @@
         document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '帳號登入';
         document.getElementById('authSwitchLink').innerText = isReg ? '已有帳號？點此登入吧' : '尚未有帳號？點此註冊';
     }
+    async function handleLogout() {
+        try {
+            await sb.auth.signOut();
+            window.location.href = window.location.origin + window.location.pathname;
+        } catch (e) {
+            showMsg("登出失敗", 'error');
+        }
+    }
     sb.auth.onAuthStateChange((event, session) => { currentUser = session ? session.user : null; updateUI(); });
     function updateUI() { 
         const tableContainer = document.getElementById('tableContainer');
@@ -189,7 +198,7 @@
             const m = currentUser.user_metadata;
             const role = m.role || 'student';
             const displayName = userDBRecord ? userDBRecord.full_name : m.full_name;
-            userStatusDisplay.innerHTML = `你好，${displayName} (${role==='admin'?'管理員':'學生'}) | <a href="javascript:void(0)" onclick="openProfile()">個人資料</a> | <a href="javascript:void(0)" onclick="sb.auth.signOut(); location.reload();">登出</a>`;
+            userStatusDisplay.innerHTML = `你好，${displayName} (${role==='admin'?'管理員':'學生'}) | <a href="javascript:void(0)" onclick="openProfile()">個人資料</a> | <a href="javascript:void(0)" onclick="handleLogout()">登出</a>`;
             if(role==='admin') {
                 if(!editingStudentId) { dashboard.style.display='none'; tableContainer.style.display='none'; adminBackend.style.display='block'; fetchAdminList(); } 
                 else { dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; }
