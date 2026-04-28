@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif; font-size: 16px; background-color: #f0f2f5; }
-        .section-dashboard { background: white; z-index: 50; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 1px solid #ccc; box-sizing: border-box; }
+        .section-dashboard { display: none; background: white; z-index: 50; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-bottom: 1px solid #ccc; box-sizing: border-box; }
         .status-bar { text-align: center; font-size: 1.4rem; font-weight: 900; padding: 10px; margin-bottom: 10px; border-radius: 8px; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .status-pass { background: linear-gradient(135deg, #28a745, #218838); }
         .status-fail { background: linear-gradient(135deg, #dc3545, #c82333); }
@@ -23,14 +23,13 @@
         .btn-help { background-color: #17a2b8; }
         .btn-cloud { background-color: #3b82f6; }
         .btn-admin { background-color: #6366f1; }
-        .table-container { position: relative; background-color: white; }
-        table.main-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .table-container { display: none; position: relative; background-color: white; }
+        table.main-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
         .main-table thead th { background-color: #6c757d; color: white; height: 45px; border: 1px solid #999; font-size: 1rem; box-shadow: 0 2px 2px rgba(0,0,0,0.1); }
         .main-table td { border: 1px solid #999; text-align: center; vertical-align: middle; height: 55px; padding: 2px; color: #333; overflow: hidden; }
         .col-cat-major { writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; font-weight: 800; font-size: 1rem; color: #000; }
         .col-cat-minor { font-weight: bold; font-size: 1rem; line-height: 1.3; padding: 0 4px; word-wrap: break-word; }
         .col-name { text-align: left !important; padding-left: 8px !important; font-weight: bold; background-color: #fff; font-size: 1rem; white-space: normal; line-height: 1.4; }
-        .col-sem { background-color: #fff; }
         .bg-dept-main { background-color: #ff9999 !important; }
         .bg-dept-sub { background-color: #ffcccc !important; }
         .bg-sch-req-main { background-color: #99ff99 !important; }
@@ -39,7 +38,6 @@
         .bg-sch-opt-sub { background-color: #ccccff !important; }
         .toggle-checkbox { display: none; }
         .score-label { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; cursor: pointer; font-weight: bold; font-size: 1.5em; position: relative; user-select: none; }
-        .toggle-checkbox:checked + .score-label { color: #000; background-color: #fff; }
         .toggle-checkbox:checked + .score-label::after { content: '✔'; font-size: 0.8em; color: #28a745; font-weight: 900; position: absolute; right: 2px; top: 2px; }
         .toggle-checkbox:not(:checked) + .score-label { background-color: #fff5f5; color: #dc3545; box-shadow: inset 0 0 0 1px #ffdce0; }
         .zero-score { color: #e0e0e0; font-size: 1em; background: #fafafa; }
@@ -48,7 +46,7 @@
         .modal-header { font-size: 1.4rem; font-weight: bold; margin-bottom: 16px; border-bottom: 2px solid #eee; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .close-modal-btn { font-size: 2rem; color: #aaa; cursor: pointer; line-height: 1; padding: 0 5px; }
         .modal-body { font-size: 1.05rem; line-height: 1.7; color: #333; }
-        .modal-score-example { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 50px; border-radius: 6px; font-weight: 800; font-size: 1.6rem; margin-right: 20px; box-sizing: border-box; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .modal-score-example { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 50px; border-radius: 6px; font-weight: 800; font-size: 1.6rem; margin-right: 20px; box-sizing: border-box; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: relative; }
         .modal-score-pass { color: #000; background-color: #fff; border: 2px solid #eee; }
         .modal-score-pass::after { content: '✔'; font-size: 0.6em; color: #28a745; font-weight: 900; position: absolute; right: 3px; top: 2px; line-height: 1; }
         .modal-score-fail { background-color: #fff5f5; color: #dc3545; border: 2px solid #ffdce0; }
@@ -74,7 +72,7 @@
 <body>
     <div id="msgBox"></div>
     <div id="statusHeader" class="section-dashboard" style="box-shadow: none; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-        <div id="userStatusDisplay" style="font-size: 0.8rem; color: #888; text-align: right; margin-bottom: 5px;">訪客模式 (<a href="javascript:void(0)" onclick="toggleUIModal(true, 'authModal')">登入存檔</a>)</div>
+        <div id="userStatusDisplay" style="font-size: 0.8rem; color: #888; text-align: right; margin-bottom: 5px;"></div>
     </div>
     <div id="dashboardSection" class="section-dashboard" style="margin-top: -5px;">
         <div id="adminEditBanner" class="admin-edit-banner">⚠️ 修改模式：正在編輯 <span id="targetStudentName">學生</span> 的資料 | <a href="javascript:void(0)" onclick="exitAdminEditMode()" style="color:white; text-decoration:underline;">取消返回列表</a></div>
@@ -106,7 +104,7 @@
     </div>
     <div id="authModal" class="modal-overlay">
         <div class="modal-content" style="max-width:350px;">
-            <div class="modal-header"><span id="authTitle">帳號登入</span><span class="close-modal-btn" onclick="toggleUIModal(false, 'authModal')">&times;</span></div>
+            <div class="modal-header"><span id="authTitle">帳號登入</span></div>
             <div class="input-group"><label>學號</label><input type="text" id="authID" placeholder="請輸入學號"></div>
             <div id="regFields" style="display:none"><div class="input-group"><label>姓名</label><input type="text" id="authName" placeholder="請輸入真實姓名"></div></div>
             <div class="input-group"><label>密碼</label><input type="password" id="authPassword" placeholder="請輸入密碼"></div>
@@ -132,7 +130,7 @@
             <div class="input-group"><label>姓名</label><input type="text" id="editUserName"></div>
             <div class="input-group"><label>導師(未來開放導師權限)</label><input type="text" id="editUserTutor"></div>
             <div class="input-group"><label>重設密碼 (留空則不改)</label><input type="password" id="editUserPwd"></div>
-            <p style="font-size:0.75rem; color:#f44336;">註：此處修改僅影響顯示資料，帳號密碼請至系統後台管理。</p>
+            <p style="font-size:0.75rem; color:#f44336; margin-bottom: 15px;">註：此處修改僅影響顯示資料，帳號密碼請至系統後台管理。</p>
             <button class="action-btn btn-admin" style="width:100%;" onclick="saveAdminUserEdit()">儲存帳號修改</button>
         </div>
     </div>
@@ -146,7 +144,7 @@
                     <li style="margin-bottom:12px; display:flex; align-items:center;"><span class="modal-score-example modal-score-pass">3</span><span>代表該科 <strong>及　格</strong> (獲得學分)</span></li>
                     <li style="display:flex; align-items:center;"><span class="modal-score-example modal-score-fail">3</span><span>代表該科 <strong>不及格</strong> (未獲學分)</span></li>
                 </ul>
-                <p style="margin-top: 20px; font-weight:bold;">上方儀表板說明</p>
+                <p style="margin-top: 25px; font-weight:bold;">上方儀表板說明</p>
                 <ul style="list-style:none; padding:0; margin:15px 0;">
                     <li style="margin-bottom:10px; display:flex; align-items:center;"><span class="status-badge badge-green">綠底</span><span>代表該項目已達畢業門檻</span></li>
                     <li style="display:flex; align-items:center;"><span class="status-badge badge-red">紅底</span><span>代表該項目未達畢業門檻</span></li>
@@ -165,13 +163,13 @@
 <script>
     const SB_URL = "https://tsavuxtqwfugoraomoyc.supabase.co", SB_KEY = "sb_publishable_ojrdIB0TeCnl8eZXbzWsdQ_2W3JB3xT";
     const sb = supabase.createClient(SB_URL, SB_KEY);
-    let userDBRecord = null, hasLoadedInitialData = false, lastLoadedStudentId = null;
+    let userDBRecord = null, hasLoadedInitialData = false, lastLoadedStudentId = null, adminListData = [];
     const curriculum = [{cat:"dept",type:1,name:"國語文",credits:[3,3,3,3,2,2]},{cat:"dept",type:1,name:"英語文",credits:[2,2,2,2,2,2]},{cat:"dept",type:1,name:"閩南語文",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"數學",credits:[3,3,0,0,0,0]},{cat:"dept",type:1,name:"歷史",credits:[0,2,0,0,0,0]},{cat:"dept",type:1,name:"地理",credits:[2,0,0,0,0,0]},{cat:"dept",type:1,name:"公民與社會",credits:[0,0,0,0,0,2]},{cat:"dept",type:1,name:"物理",credits:[2,0,0,0,0,0]},{cat:"dept",type:1,name:"化學",credits:[0,1,0,0,0,0]},{cat:"dept",type:1,name:"生物",credits:[0,1,0,0,0,0]},{cat:"dept",type:1,name:"音樂",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"美術",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"生涯規劃",credits:[0,0,0,0,1,1]},{cat:"dept",type:1,name:"資訊科技",credits:[0,2,0,0,0,0]},{cat:"dept",type:1,name:"健康與護理",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"體育",credits:[2,2,2,2,2,2]},{cat:"dept",type:1,name:"全民國防教育",credits:[1,1,0,0,0,0]},{cat:"dept",type:2,name:"商業概論",credits:[2,2,0,0,0,0]},{cat:"dept",type:2,name:"數位科技概論",credits:[2,2,0,0,0,0]},{cat:"dept",type:2,name:"會計學",credits:[3,3,2,2,0,0]},{cat:"dept",type:2,name:"經濟學",credits:[0,0,4,4,0,0]},{cat:"dept",type:3,name:"數位科技應用",credits:[0,0,2,2,0,0]},{cat:"dept",type:3,name:"商業溝通",credits:[0,0,0,0,0,2]},{cat:"dept",type:3,name:"程式語言與設計",credits:[2,2,0,0,0,0]},{cat:"dept",type:3,name:"多媒體製作與應用",credits:[0,0,3,3,0,0]},{cat:"dept",type:3,name:"資料庫應用",credits:[0,0,0,0,2,2]},{cat:"sch_req",type:1,name:"各類文選選讀",credits:[0,0,0,0,1,1]},{cat:"sch_req",type:1,name:"英文會話",credits:[1,1,0,0,0,0]},{cat:"sch_req",type:1,name:"英文閱讀初階",credits:[0,0,1,1,0,0]},{cat:"sch_req",type:1,name:"英文閱讀進階",credits:[0,0,0,0,1,1]},{cat:"sch_req",type:1,name:"數學(校定)",credits:[0,0,3,3,0,0]},{cat:"sch_req",type:2,name:"計算機探究",credits:[0,0,0,0,4,4]},{cat:"sch_req",type:2,name:"商業專論",credits:[0,0,0,0,2,2]},{cat:"sch_req",type:3,name:"記帳實務",credits:[1,1,0,0,0,0]},{cat:"sch_req",type:3,name:"專題實作",credits:[0,0,0,2,2,0]},{cat:"sch_opt",type:1,name:"數學演習",credits:[0,0,0,0,3,3]},{cat:"sch_opt",type:3,name:"文書處理",credits:[2,0,0,0,0,0]},{cat:"sch_opt",type:3,name:"專題前導",credits:[0,0,2,0,0,0]},{cat:"sch_opt",type:3,name:"軟體應用",credits:[0,0,3,0,0,0]},{cat:"sch_opt",type:3,name:"會計實務",credits:[0,0,2,2,4,4]},{cat:"sch_opt",type:3,name:"經濟應用實務",credits:[0,0,0,0,4,4]},{cat:"sch_opt",type:3,name:"同科單班(2選1)<br>網頁規劃實務/進階軟體應用",credits:[0,0,0,3,0,0]},{cat:"sch_opt",type:3,name:"同科單班(2選1)<br>進階程式設計/電腦繪圖實務",credits:[0,0,0,0,2,0]},{cat:"sch_opt",type:3,name:"跨群選修(6選1)",credits:[0,0,2,2,0,0]}];
     const mapping = { cat: { "dept": { text: "部定必修", class: "bg-dept-main", subClass: "bg-dept-sub" }, "sch_req": { text: "校定必修", class: "bg-sch-req-main", subClass: "bg-sch-req-sub" }, "sch_opt": { text: "校定選修", class: "bg-sch-opt-main", subClass: "bg-sch-opt-sub" } }, type: { 1: "一般科目", 2: "專業科目", 3: "實習科目" } };
     let DEPT_THRESHOLD = 0, currentUser = null, editingStudentId = null;
     function initThresholds() { let maxDept = 0; curriculum.forEach(i => { if(i.cat==='dept') maxDept += i.credits.reduce((a,b)=>a+b,0); }); DEPT_THRESHOLD = Math.round(maxDept * 0.85); const el = document.getElementById('dept-limit-text'); if(el) el.innerText = `(${DEPT_THRESHOLD})`; }
-    function toggleUIModal(show, id) { const el = document.getElementById(id); if(el) el.style.display = show ? 'flex' : 'none'; if(show && id==='adminModal') fetchAdminList(); }
-    function handleOutsideClick(event) { if (event.target.classList.contains('modal-overlay')) event.target.style.display = 'none'; }
+    function toggleUIModal(show, id) { const el = document.getElementById(id); if(el) el.style.display = show ? 'flex' : 'none'; }
+    function handleOutsideClick(event) { if (event.target.classList.contains('modal-overlay')) { if(!currentUser && event.target.id === 'authModal') return; event.target.style.display = 'none'; } }
     function showMsg(txt, type='info') { const b = document.getElementById('msgBox'); b.innerText = txt; b.style.background = type==='error'?'#dc3545':'#28a745'; b.style.display = 'block'; setTimeout(()=>b.style.display='none', 2500); }
     async function handleAuth() { const sid = document.getElementById('authID').value.trim(); const pwd = document.getElementById('authPassword').value; const email = `${sid}@school.edu.tw`; try { if(document.getElementById('regFields').style.display === 'block') { const name = document.getElementById('authName').value.trim(); if(!name) throw new Error("請輸入姓名"); const { error } = await sb.auth.signUp({ email, password: pwd, options: { data: { full_name: name, student_id: sid, role: 'student', tutor: '未設定' } } }); if(error) throw error; showMsg("註冊成功，請登入吧"); switchAuthMode(); } else { const { error } = await sb.auth.signInWithPassword({ email, password: pwd }); if(error) throw error; showMsg("登入成功"); toggleUIModal(false, 'authModal'); } } catch (e) { showMsg(e.message, 'error'); } }
     function switchAuthMode() { 
@@ -180,14 +178,16 @@
         document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '帳號登入';
         document.getElementById('authSwitchLink').innerText = isReg ? '已有帳號？點此登入吧' : '尚未有帳號？點此註冊';
     }
-    async function handleLogout() { try { await sb.auth.signOut(); userDBRecord = null; hasLoadedInitialData = false; window.location.href = window.location.origin + window.location.pathname; } catch (e) { showMsg("登出失敗", 'error'); } }
-    sb.auth.onAuthStateChange((event, session) => { currentUser = session ? session.user : null; updateUI(); });
+    async function handleLogout() { try { await sb.auth.signOut(); window.location.reload(); } catch (e) { showMsg("登出失敗", 'error'); } }
+    sb.auth.onAuthStateChange((event, session) => { currentUser = session ? session.user : null; if(!currentUser) { toggleUIModal(true, 'authModal'); document.querySelectorAll('.section-dashboard, .table-container, .admin-backend').forEach(el => el.style.display = 'none'); } else { updateUI(); } });
     function updateUI() { 
         const tableContainer = document.getElementById('tableContainer');
         const adminBackend = document.getElementById('adminBackend');
         const dashboard = document.getElementById('dashboardSection');
         const userStatusDisplay = document.getElementById('userStatusDisplay');
+        const header = document.getElementById('statusHeader');
         if(currentUser) {
+            header.style.display = 'block';
             const m = currentUser.user_metadata;
             const role = m.role || 'student';
             const displayName = userDBRecord ? userDBRecord.full_name : m.full_name;
@@ -199,18 +199,24 @@
                 dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; 
                 if(!hasLoadedInitialData) loadFromCloud(); 
             }
-        } else {
-            userStatusDisplay.innerHTML = `訪客模式 (<a href="javascript:void(0)" onclick="toggleUIModal(true, 'authModal')">登入存檔</a>)`;
-            dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none';
         }
     }
     function openProfile() { const m = userDBRecord || currentUser.user_metadata; document.getElementById('profAccount').value = m.student_id || ''; document.getElementById('profName').value = m.full_name || ''; document.getElementById('profTutor').value = m.tutor || '未設定'; document.getElementById('profPassword').value = ''; toggleUIModal(true, 'profileModal'); }
     async function updateProfile() { const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value; const d = { data: { full_name: n } }; if(p) d.password = p; try { await sb.auth.updateUser(d); await sb.from('grad_checks').update({ full_name: n }).eq('id', currentUser.id); showMsg("資料已更新！"); hasLoadedInitialData = false; await loadFromCloud(); toggleUIModal(false, 'profileModal'); } catch (e) { showMsg(e.message, 'error'); } }
-    async function saveToCloud() { if(!currentUser) return toggleUIModal(true, 'authModal'); const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked); const res = calculateStats(); const targetId = editingStudentId || currentUser.id; const data = { id: targetId, credits_json: checks, total_credits: res.total, is_graduated: res.pass, updated_at: new Date() }; if(!editingStudentId && userDBRecord) { data.full_name = userDBRecord.full_name; data.student_id = userDBRecord.student_id; data.tutor = userDBRecord.tutor; } const { error } = await sb.from('grad_checks').upsert(data); if(error) showMsg(error.message, 'error'); else showMsg("同步成功！"); }
+    async function saveToCloud() { if(!currentUser) return; const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked); const res = calculateStats(); const targetId = editingStudentId || currentUser.id; const data = { id: targetId, credits_json: checks, total_credits: res.total, is_graduated: res.pass, updated_at: new Date() }; if(!editingStudentId && userDBRecord) { data.full_name = userDBRecord.full_name; data.student_id = userDBRecord.student_id; data.tutor = userDBRecord.tutor; } const { error } = await sb.from('grad_checks').upsert(data); if(error) showMsg(error.message, 'error'); else showMsg("同步成功！"); }
     async function deleteStudentData(id, name) { if(!confirm(`確定要註銷「${name}」嗎？`)) return; await sb.from('grad_checks').delete().eq('id', id); showMsg("已註銷"); fetchAdminList(); }
     async function enterAdminEditMode(id, name) { editingStudentId = id; document.getElementById('adminEditBanner').style.display = 'block'; document.getElementById('targetStudentName').innerText = name; updateUI(); }
     function exitAdminEditMode() { editingStudentId = null; lastLoadedStudentId = null; document.getElementById('adminEditBanner').style.display = 'none'; updateUI(); }
-    async function openAdminUserEdit(id, sid, name, tutor) { document.getElementById('editUserId').value = id; document.getElementById('editUserSid').value = sid; document.getElementById('editUserName').value = name; document.getElementById('editUserTutor').value = tutor || '未設定'; document.getElementById('editUserPwd').value = ''; toggleUIModal(true, 'adminUserModal'); }
+    function openAdminUserEdit(index) {
+        const s = adminListData[index];
+        if(!s) return;
+        document.getElementById('editUserId').value = s.id;
+        document.getElementById('editUserSid').value = s.student_id;
+        document.getElementById('editUserName').value = s.full_name;
+        document.getElementById('editUserTutor').value = s.tutor || '未設定';
+        document.getElementById('editUserPwd').value = '';
+        toggleUIModal(true, 'adminUserModal');
+    }
     async function saveAdminUserEdit() { const id = document.getElementById('editUserId').value, sid = document.getElementById('editUserSid').value, n = document.getElementById('editUserName').value, t = document.getElementById('editUserTutor').value; try { const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, tutor: t }).eq('id', id); if(error) throw error; showMsg("帳號資料已更新"); toggleUIModal(false, 'adminUserModal'); fetchAdminList(); } catch (e) { showMsg(e.message, 'error'); } }
     async function loadFromCloud(tid = null) { 
         const uid = tid || currentUser.id; 
@@ -224,7 +230,19 @@
             } 
         } 
     }
-    async function fetchAdminList() { const { data } = await sb.from('grad_checks').select('*'); const b = document.getElementById('adminListBody'); b.innerHTML = ""; if(data) data.forEach(s => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}', '${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit('${s.id}', '${s.student_id}', '${s.full_name}', '${s.tutor}')">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}', '${s.full_name}')">註銷帳號</button></td>`; b.appendChild(tr); }); }
+    async function fetchAdminList() { 
+        const { data } = await sb.from('grad_checks').select('*'); 
+        const b = document.getElementById('adminListBody'); 
+        b.innerHTML = ""; 
+        if(data) {
+            adminListData = data;
+            data.forEach((s, i) => { 
+                const tr = document.createElement('tr'); 
+                tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}', '${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}', '${s.full_name}')">註銷帳號</button></td>`; 
+                b.appendChild(tr); 
+            }); 
+        }
+    }
     function renderTable() { 
         const tbody = document.getElementById("tableBody"); tbody.innerHTML = ""; 
         const countMap = {}; curriculum.forEach(i => { if(!countMap[i.cat]) countMap[i.cat]={t:0, types:{}}; countMap[i.cat].t++; if(!countMap[i.cat].types[i.type]) countMap[i.cat].types[i.type]=0; countMap[i.cat].types[i.type]++; }); 
