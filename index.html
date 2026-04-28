@@ -23,13 +23,13 @@
         .btn-help { background-color: #17a2b8; }
         .btn-cloud { background-color: #3b82f6; }
         .btn-admin { background-color: #6366f1; }
-        .table-container { display: none; position: relative; background-color: white; overflow-x: auto; }
-        table.main-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 800px; }
-        .main-table thead th { background-color: #6c757d; color: white; height: 45px; border: 1px solid #999; font-size: 1rem; box-shadow: 0 2px 2px rgba(0,0,0,0.1); }
-        .main-table td { border: 1px solid #999; text-align: center; vertical-align: middle; height: 55px; padding: 2px; color: #333; overflow: hidden; }
-        .col-cat-major { writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; font-weight: 800; font-size: 1rem; color: #000; }
-        .col-cat-minor { font-weight: bold; font-size: 1rem; line-height: 1.3; padding: 0 4px; word-wrap: break-word; }
-        .col-name { text-align: left !important; padding-left: 8px !important; font-weight: bold; background-color: #fff; font-size: 1rem; white-space: normal; line-height: 1.4; }
+        .table-container { display: none; position: relative; background-color: white; width: 100%; overflow-x: hidden; }
+        table.main-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0; padding: 0; }
+        .main-table thead th { background-color: #6c757d; color: white; height: 45px; border: 1px solid #999; font-size: 0.9rem; box-shadow: 0 2px 2px rgba(0,0,0,0.1); }
+        .main-table td { border: 1px solid #999; text-align: center; vertical-align: middle; height: 55px; padding: 2px; color: #333; overflow: hidden; word-break: break-all; }
+        .col-cat-major { writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; font-weight: 800; font-size: 0.85rem; color: #000; }
+        .col-cat-minor { font-weight: bold; font-size: 0.85rem; line-height: 1.2; padding: 0 2px; word-wrap: break-word; }
+        .col-name { text-align: left !important; padding-left: 4px !important; font-weight: bold; background-color: #fff; font-size: 0.9rem; line-height: 1.3; }
         .bg-dept-main { background-color: #ff9999 !important; }
         .bg-dept-sub { background-color: #ffcccc !important; }
         .bg-sch-req-main { background-color: #99ff99 !important; }
@@ -37,8 +37,8 @@
         .bg-sch-opt-main { background-color: #9999ff !important; }
         .bg-sch-opt-sub { background-color: #ccccff !important; }
         .toggle-checkbox { display: none; }
-        .score-label { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; cursor: pointer; font-weight: bold; font-size: 1.5em; position: relative; user-select: none; }
-        .toggle-checkbox:checked + .score-label::after { content: '✔'; font-size: 0.8em; color: #28a745; font-weight: 900; position: absolute; right: 2px; top: 2px; }
+        .score-label { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; cursor: pointer; font-weight: bold; font-size: 1.3em; position: relative; user-select: none; }
+        .toggle-checkbox:checked + .score-label::after { content: '✔'; font-size: 0.8em; color: #28a745; font-weight: 900; position: absolute; right: 1px; top: 1px; }
         .toggle-checkbox:not(:checked) + .score-label { background-color: #fff5f5; color: #dc3545; box-shadow: inset 0 0 0 1px #ffdce0; }
         .zero-score { color: #e0e0e0; font-size: 1em; background: #fafafa; }
         .modal-overlay { display: none; position: fixed; z-index: 5000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(2px); align-items: center; justify-content: center; animation: fadeIn 0.2s; }
@@ -55,8 +55,8 @@
         .badge-red { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .admin-backend { display: none; padding: 20px; background: white; margin: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .admin-header { font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; color: #333; border-left: 6px solid #6366f1; padding-left: 15px; }
-        .admin-table { width: 100%; border-collapse: collapse; }
-        .admin-table th, .admin-table td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
+        .admin-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .admin-table th, .admin-table td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .admin-table th { background: #f8f9fa; color: #666; font-size: 0.9rem; }
         .btn-mini { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 0.8rem; color: white; font-weight: bold; margin-right: 5px; }
         .input-group { margin-bottom: 15px; text-align: left; }
@@ -66,7 +66,12 @@
         #msgBox { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 50px; color: white; font-weight: bold; display: none; z-index: 6000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @media (max-height: 500px) { .section-dashboard { padding: 4px; } .status-bar { font-size: 1rem; padding: 4px; margin-bottom: 5px; line-height: 1.2; } .result-table td { height: 32px; font-size: 1.2rem; } .result-table th { padding: 2px; font-size: 0.8rem; } .btn-group { margin-top: 5px; } .action-btn { padding: 6px; font-size: 0.9rem; } .main-table td { height: 40px; font-size: 0.95rem; } .score-label { font-size: 1.3em; } }
+        @media (max-width: 600px) {
+            .result-table td { font-size: 1.2rem; height: 40px; }
+            .status-bar { font-size: 1.1rem; }
+            .score-label { font-size: 1.1em; }
+            .col-name { font-size: 0.8rem; padding-left: 2px !important; }
+        }
     </style>
 </head>
 <body>
@@ -78,12 +83,8 @@
         <div id="adminEditBanner" class="admin-edit-banner">⚠️ 修改模式：正在編輯 <span id="targetStudentName">學生</span> 的資料 | <a href="javascript:void(0)" onclick="exitAdminEditMode()" style="color:white; text-decoration:underline;">取消返回列表</a></div>
         <div id="finalStatus" class="status-bar status-fail">計算中...</div>
         <table class="result-table">
-            <thead>
-                <tr><th>總學分<small>(160)</small></th><th>部定必修<small id="dept-limit-text">(-)</small></th><th>專業實習<small>(60)</small></th><th>實習<small>(45)</small></th></tr>
-            </thead>
-            <tbody>
-                <tr><td id="cell-total">0</td><td id="cell-dept">0</td><td id="cell-prof-prac">0</td><td id="cell-prac">0</td></tr>
-            </tbody>
+            <thead><tr><th>總學分<small>(160)</small></th><th>部定必修<small id="dept-limit-text">(-)</small></th><th>專業實習<small>(60)</small></th><th>實習<small>(45)</small></th></tr></thead>
+            <tbody><tr><td id="cell-total">0</td><td id="cell-dept">0</td><td id="cell-prof-prac">0</td><td id="cell-prac">0</td></tr></tbody>
         </table>
         <div class="btn-group">
             <button class="action-btn btn-help" onclick="toggleUIModal(true, 'helpModal')">使用說明</button>
@@ -201,10 +202,11 @@
         }
     }
     function openProfile() { 
-        const m = userDBRecord || currentUser.user_metadata;
-        document.getElementById('profAccount').value = m.student_id || ''; 
-        document.getElementById('profName').value = m.full_name || ''; 
-        document.getElementById('profTutor').value = m.tutor || '未設定'; 
+        if (!currentUser) return;
+        const m = currentUser.user_metadata;
+        document.getElementById('profAccount').value = userDBRecord ? userDBRecord.student_id : (m.student_id || ''); 
+        document.getElementById('profName').value = userDBRecord ? userDBRecord.full_name : (m.full_name || ''); 
+        document.getElementById('profTutor').value = userDBRecord ? (userDBRecord.tutor || '未設定') : (m.tutor || '未設定'); 
         document.getElementById('profPassword').value = '';
         toggleUIModal(true, 'profileModal'); 
     }
@@ -231,16 +233,7 @@
         document.getElementById('editUserPwd').value = '';
         toggleUIModal(true, 'adminUserModal');
     }
-    async function saveAdminUserEdit() { 
-        const id = document.getElementById('editUserId').value, sid = document.getElementById('editUserSid').value, n = document.getElementById('editUserName').value, t = document.getElementById('editUserTutor').value; 
-        try { 
-            const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, tutor: t }).eq('id', id); 
-            if(error) throw error; 
-            showMsg("帳號資料已更新"); 
-            toggleUIModal(false, 'adminUserModal'); 
-            fetchAdminList(); 
-        } catch (e) { showMsg(e.message, 'error'); } 
-    }
+    async function saveAdminUserEdit() { const id = document.getElementById('editUserId').value, sid = document.getElementById('editUserSid').value, n = document.getElementById('editUserName').value, t = document.getElementById('editUserTutor').value; try { const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, tutor: t }).eq('id', id); if(error) throw error; showMsg("帳號資料已更新"); toggleUIModal(false, 'adminUserModal'); fetchAdminList(); } catch (e) { showMsg(e.message, 'error'); } }
     async function loadFromCloud(tid = null) { 
         const uid = tid || currentUser.id; 
         const { data } = await sb.from('grad_checks').select('*').eq('id', uid).single(); 
