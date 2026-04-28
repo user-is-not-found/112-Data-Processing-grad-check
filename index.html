@@ -219,7 +219,7 @@
         } catch (e) { showMsg(e.message, 'error'); } 
     }
     async function saveToCloud() { if(!currentUser) return; const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked); const res = calculateStats(); const targetId = editingStudentId || currentUser.id; const data = { id: targetId, credits_json: checks, total_credits: res.total, is_graduated: res.pass, updated_at: new Date() }; if(!editingStudentId && userDBRecord) { data.full_name = userDBRecord.full_name; data.student_id = userDBRecord.student_id; data.tutor = userDBRecord.tutor; } const { error } = await sb.from('grad_checks').upsert(data); if(error) showMsg(error.message, 'error'); else showMsg("同步成功！"); }
-    async function deleteStudentData(id, name) { if(!confirm(`確定要註銷「${name}」嗎？`)) return; await sb.from('grad_checks').delete().eq('id', id); showMsg("已註銷"); fetchAdminList(); }
+    async function deleteStudentData(id, name) { if(!confirm(`確定要刪除「${name}」資料嗎？`)) return; await sb.from('grad_checks').delete().eq('id', id); showMsg("已刪除"); fetchAdminList(); }
     async function enterAdminEditMode(id, name) { editingStudentId = id; document.getElementById('adminEditBanner').style.display = 'block'; document.getElementById('targetStudentName').innerText = name; updateUI(); }
     function exitAdminEditMode() { editingStudentId = null; lastLoadedStudentId = null; document.getElementById('adminEditBanner').style.display = 'none'; updateUI(); }
     function openAdminUserEdit(index) {
@@ -253,7 +253,7 @@
             adminListData = data;
             data.forEach((s, i) => { 
                 const tr = document.createElement('tr'); 
-                tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}', '${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}', '${s.full_name}')">註銷帳號</button></td>`; 
+                tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}', '${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}', '${s.full_name}')">刪除資料</button></td>`; 
                 b.appendChild(tr); 
             }); 
         }
