@@ -7,19 +7,14 @@
     <style>
         html, body {
             margin: 0; padding: 0;
-            height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
             font-size: 16px;
             background-color: #f0f2f5; 
-            overflow: hidden; 
-            display: flex; flex-direction: column;
         }
         .section-dashboard {
-            flex: 0 0 auto;
             background: white;
             z-index: 50;
             padding: 10px; 
-            padding-right: 10px; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border-bottom: 1px solid #ccc;
             box-sizing: border-box;
@@ -77,8 +72,6 @@
         .btn-fail-all { background-color: #6c757d; }
         .btn-help { background-color: #17a2b8; } 
         .table-container {
-            flex: 1;
-            overflow-y: scroll;
             position: relative;
             background-color: white;
         }
@@ -88,9 +81,7 @@
             table-layout: fixed; 
         }
         .main-table thead th {
-            position: sticky; 
-            top: 0;            
-            z-index: 40;        
+            /* 移除 position: sticky; 與 top: 0; 以取消置頂效果 */
             background-color: #6c757d; 
             color: white;
             height: 45px; 
@@ -326,32 +317,6 @@
         </table>
     </div>
 <script>
-    function toggleModal(show) {
-        const modal = document.getElementById('helpModal');
-        if (show) {
-            modal.style.display = 'flex';
-        } else {
-            modal.style.display = 'none';
-        }
-    }
-    function handleOutsideClick(event) {
-        const modal = document.getElementById('helpModal');
-        if (event.target === modal) {
-            toggleModal(false);
-        }
-    }
-    function adjustScrollbarPadding() {
-        const container = document.getElementById('tableContainer');
-        const dashboard = document.getElementById('dashboardSection');
-        const scrollbarWidth = container.offsetWidth - container.clientWidth;
-        const isCompactMode = window.innerHeight <= 500;
-        const basePadding = isCompactMode ? 4 : 10;
-        dashboard.style.paddingRight = (basePadding + scrollbarWidth) + 'px';
-        dashboard.style.paddingLeft = basePadding + 'px';
-        dashboard.style.paddingTop = basePadding + 'px';
-        dashboard.style.paddingBottom = basePadding + 'px';
-    }
-    window.addEventListener('resize', adjustScrollbarPadding);
     const curriculum = [
         { cat: "dept", type: 1, name: "國語文", credits: [3,3,3,3,2,2] },
         { cat: "dept", type: 1, name: "英語文", credits: [2,2,2,2,2,2] },
@@ -398,6 +363,7 @@
         { cat: "sch_opt", type: 3, name: "同科單班(2選1)<br>進階程式設計/電腦繪圖實務", credits: [0,0,0,0,2,0] }, 
         { cat: "sch_opt", type: 3, name: "跨群選修(6選1)", credits: [0,0,2,2,0,0] } 
     ];
+
     const mapping = {
         cat: {
             "dept": { text: "部定必修", class: "bg-dept-main", subClass: "bg-dept-sub" },
@@ -410,7 +376,9 @@
             3: "實習科目"
         }
     };
+
     let DEPT_THRESHOLD = 0;
+
     function initThresholds() {
         let maxDeptCredits = 0;
         curriculum.forEach(item => {
@@ -421,6 +389,22 @@
         DEPT_THRESHOLD = Math.round(maxDeptCredits * 0.85);
         document.getElementById('dept-limit-text').innerText = `(${DEPT_THRESHOLD})`;
     }
+
+    function toggleModal(show) {
+        const modal = document.getElementById('helpModal');
+        modal.style.display = show ? 'flex' : 'none';
+    }
+
+    function handleOutsideClick(event) {
+        const modal = document.getElementById('helpModal');
+        if (event.target === modal) toggleModal(false);
+    }
+
+    function adjustScrollbarPadding() {
+        const dashboard = document.getElementById('dashboardSection');
+        dashboard.style.paddingRight = '10px';
+    }
+
     function renderTable() {
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = ""; 
@@ -431,8 +415,10 @@
             if(!countMap[item.cat].types[item.type]) countMap[item.cat].types[item.type] = 0;
             countMap[item.cat].types[item.type]++;
         });
+
         let renderedCatCount = {}; 
         let renderedTypeCount = {};
+
         curriculum.forEach((item, index) => {
             const tr = document.createElement("tr");
             if (!renderedCatCount[item.cat]) {
@@ -452,10 +438,12 @@
                 tr.appendChild(tdType);
                 renderedTypeCount[item.cat][item.type] = true;
             }
+
             let tdName = document.createElement("td");
             tdName.innerHTML = item.name; 
             tdName.className = "col-name";
             tr.appendChild(tdName);
+
             item.credits.forEach((credit, semIndex) => {
                 let td = document.createElement("td");
                 td.className = "col-sem";
@@ -466,15 +454,16 @@
                     checkbox.className = "toggle-checkbox";
                     checkbox.id = uniqueID;
                     checkbox.checked = true;
-                    
                     checkbox.dataset.val = credit;
                     checkbox.dataset.cat = item.cat;
                     checkbox.dataset.type = item.type;
                     checkbox.onchange = calculate; 
+
                     let label = document.createElement("label");
                     label.className = "score-label";
                     label.htmlFor = uniqueID; 
                     label.innerText = credit;
+
                     td.appendChild(checkbox);
                     td.appendChild(label);
                 } else {
@@ -487,11 +476,12 @@
         });
         setTimeout(adjustScrollbarPadding, 0);
     }
+
     function calculate() {
         let total = 0, deptTotal = 0, profPrac = 0, pracOnly = 0;
-        const checkedInputs = document.querySelectorAll(".toggle-checkbox:checked");
+        const checkboxes = document.querySelectorAll(".toggle-checkbox:checked");
         
-        checkedInputs.forEach(input => {
+        checkboxes.forEach(input => {
             let val = parseInt(input.dataset.val);
             let cat = input.dataset.cat;
             let type = parseInt(input.dataset.type);
@@ -500,10 +490,12 @@
             if (type === 2 || type === 3) profPrac += val;
             if (type === 3) pracOnly += val;
         });
+
         updateCell("total", total, 160);
         updateCell("dept", deptTotal, DEPT_THRESHOLD);
         updateCell("prof-prac", profPrac, 60);
         updateCell("prac", pracOnly, 45);
+
         const finalStatus = document.getElementById("finalStatus");
         if(total >= 160 && deptTotal >= DEPT_THRESHOLD && profPrac >= 60 && pracOnly >= 45) {
             finalStatus.innerText = "唉呦不錯喔~你竟然可以畢業";
@@ -513,6 +505,7 @@
             finalStatus.className = "status-bar status-fail";
         }
     }
+
     function updateCell(id, current, limit) {
         const cell = document.getElementById(`cell-${id}`);
         if(current >= limit) {
@@ -525,13 +518,15 @@
             cell.style.borderColor = "#f5c6cb";
         }
     }
+
     function setAllStatus(isPass) {
         const checkboxes = document.querySelectorAll(".toggle-checkbox");
-        checkboxes.forEach(chk => {
-            chk.checked = isPass;
-        });
+        checkboxes.forEach(chk => chk.checked = isPass);
         calculate();
     }
+
+    window.addEventListener('resize', adjustScrollbarPadding);
+    
     initThresholds();
     renderTable();
     calculate();
