@@ -80,14 +80,17 @@ table.main-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0
 </table>
 <div class="btn-group">
 <button class="action-btn btn-help" onclick="toggleUIModal(true,'helpModal')">使用說明</button>
-<button id="saveBtn" class="action-btn btn-cloud" onclick="saveToCloud()">雲端存檔</button>
+<button id="saveBtn" class="action-btn btn-cloud" onclick="handleMainAction()">班級資料</button>
 <button class="action-btn btn-pass-all" onclick="setAllStatus(true)">全部及格</button>
 <button class="action-btn btn-fail-all" onclick="setAllStatus(false)">學分歸零</button>
 </div>
 </div>
 <div id="adminBackend" class="admin-backend">
 <div class="admin-header">
-<span>資料管理</span>
+<div style="display:flex; align-items:center; gap:10px;">
+<span id="backendTitle">資料管理</span>
+<button id="teacherBackBtn" class="btn-mini" style="background:#6c757d; display:none;" onclick="isViewingClassList=false;updateUI();">返回檢核表試算</button>
+</div>
 <select id="adminSort" class="sort-select" onchange="fetchAdminList()">
 <option value="save">存檔時間 (新到舊)</option>
 <option value="join">加入時間 (舊到新)</option>
@@ -111,7 +114,7 @@ table.main-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0
 <div class="modal-header"><span>個人資料管理</span><span class="close-modal-btn" onclick="toggleUIModal(false,'profileModal')">&times;</span></div>
 <div class="input-group"><label>帳號 (僅管理員可更正)</label><input type="text" id="profAccount" disabled style="background:#eee;"></div>
 <div class="input-group"><label>姓名</label><input type="text" id="profName" placeholder="請輸入姓名"></div>
-<div class="input-group"><label>導師(未來開放導師管理權限)</label><input type="text" id="profTutor" disabled style="background:#eee;"></div>
+<div class="input-group"><label id="profTutorLabel">導師 (僅管理員可更正)</label><input type="text" id="profTutor" disabled style="background:#eee;"></div>
 <div class="input-group"><label>更改密碼 (不更改保持空白)</label><input type="password" id="profPassword"></div>
 <button class="action-btn btn-admin" style="width:100%;" onclick="updateProfile()">儲存修改</button>
 </div>
@@ -122,10 +125,8 @@ table.main-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0
 <input type="hidden" id="editUserId">
 <div class="input-group"><label>學號 (僅管理員可更正)</label><input type="text" id="editUserSid"></div>
 <div class="input-group"><label>姓名</label><input type="text" id="editUserName"></div>
-<div class="input-group"><label>身份 (邀請制)</label><select id="editUserRole"><option value="student">學生</option><option value="teacher">教師</option><option value="admin">管理員</option></select></div>
-<div class="input-group"><label>導師(未來開放導師權限)</label><input type="text" id="editUserTutor"></div>
-<div class="input-group"><label>重設密碼 (不更改保持空白)</label><input type="password" id="editUserPwd"></div>
-<p style="font-size:0.75rem;color:#f44336;margin-bottom:15px;">註：此處修改僅影響顯示資料，帳號密碼請至系統後台管理。</p>
+<div class="input-group"><label>身份</label><select id="editUserRole" onchange="toggleAdminTutorField(this.value)"><option value="student">學生</option><option value="teacher">教師</option><option value="admin">管理員</option></select></div>
+<div class="input-group"><label id="editTutorLabel">導師</label><div id="editTutorWrapper"></div></div>
 <button class="action-btn btn-admin" style="width:100%;" onclick="saveAdminUserEdit()">儲存帳號修改</button>
 </div>
 </div>
@@ -148,7 +149,7 @@ table.main-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0
 <script>
 const SB_URL="https://tsavuxtqwfugoraomoyc.supabase.co",SB_KEY="sb_publishable_ojrdIB0TeCnl8eZXbzWsdQ_2W3JB3xT";
 const sb=supabase.createClient(SB_URL,SB_KEY);
-let userDBRecord=null,hasLoadedInitialData=false,lastLoadedStudentId=null,adminListData=[];
+let userDBRecord=null,hasLoadedInitialData=false,lastLoadedStudentId=null,adminListData=[],teacherNames=[],isViewingClassList=false;
 const curriculum=[{cat:"dept",type:1,name:"國語文",credits:[3,3,3,3,2,2]},{cat:"dept",type:1,name:"英語文",credits:[2,2,2,2,2,2]},{cat:"dept",type:1,name:"閩南語文",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"數學",credits:[3,3,0,0,0,0]},{cat:"dept",type:1,name:"歷史",credits:[0,2,0,0,0,0]},{cat:"dept",type:1,name:"地理",credits:[2,0,0,0,0,0]},{cat:"dept",type:1,name:"公民與社會",credits:[0,0,0,0,0,2]},{cat:"dept",type:1,name:"物理",credits:[2,0,0,0,0,0]},{cat:"dept",type:1,name:"化學",credits:[0,1,0,0,0,0]},{cat:"dept",type:1,name:"生物",credits:[0,1,0,0,0,0]},{cat:"dept",type:1,name:"音樂",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"美術",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"生涯規劃",credits:[0,0,0,0,1,1]},{cat:"dept",type:1,name:"資訊科技",credits:[0,2,0,0,0,0]},{cat:"dept",type:1,name:"健康與護理",credits:[1,1,0,0,0,0]},{cat:"dept",type:1,name:"體育",credits:[2,2,2,2,2,2]},{cat:"dept",type:1,name:"全民國防教育",credits:[1,1,0,0,0,0]},{cat:"dept",type:2,name:"商業概論",credits:[2,2,0,0,0,0]},{cat:"dept",type:2,name:"數位科技概論",credits:[2,2,0,0,0,0]},{cat:"dept",type:2,name:"會計學",credits:[3,3,2,2,0,0]},{cat:"dept",type:2,name:"經濟學",credits:[0,0,4,4,0,0]},{cat:"dept",type:3,name:"數位科技應用",credits:[0,0,2,2,0,0]},{cat:"dept",type:3,name:"商業溝通",credits:[0,0,0,0,0,2]},{cat:"dept",type:3,name:"程式語言與設計",credits:[2,2,0,0,0,0]},{cat:"dept",type:3,name:"多媒體製作與應用",credits:[0,0,3,3,0,0]},{cat:"dept",type:3,name:"資料庫應用",credits:[0,0,0,0,2,2]},{cat:"sch_req",type:1,name:"各類文選選讀",credits:[0,0,0,0,1,1]},{cat:"sch_req",type:1,name:"英文會話",credits:[1,1,0,0,0,0]},{cat:"sch_req",type:1,name:"英文閱讀初階",credits:[0,0,1,1,0,0]},{cat:"sch_req",type:1,name:"英文閱讀進階",credits:[0,0,0,0,1,1]},{cat:"sch_req",type:1,name:"數學",credits:[0,0,3,3,0,0]},{cat:"sch_req",type:2,name:"計算機探究",credits:[0,0,0,0,4,4]},{cat:"sch_req",type:2,name:"商業專論",credits:[0,0,0,0,2,2]},{cat:"sch_req",type:3,name:"記帳實務",credits:[1,1,0,0,0,0]},{cat:"sch_req",type:3,name:"專題實作",credits:[0,0,0,2,2,0]},{cat:"sch_opt",type:1,name:"數學演習",credits:[0,0,0,0,3,3]},{cat:"sch_opt",type:3,name:"文書處理",credits:[2,0,0,0,0,0]},{cat:"sch_opt",type:3,name:"專題前導",credits:[0,0,2,0,0,0]},{cat:"sch_opt",type:3,name:"軟體應用",credits:[0,0,3,0,0,0]},{cat:"sch_opt",type:3,name:"會計實務",credits:[0,0,2,2,4,4]},{cat:"sch_opt",type:3,name:"經濟應用實務",credits:[0,0,0,0,4,4]},{cat:"sch_opt",type:3,name:"同科單班(2選1)<br>網頁規劃實務/進階軟體應用",credits:[0,0,0,3,0,0]},{cat:"sch_opt",type:3,name:"同科單班(2選1)<br>進階程式設計/電腦繪圖實務",credits:[0,0,0,0,2,0]},{cat:"sch_opt",type:3,name:"跨群選修(6選1)",credits:[0,0,2,2,0,0]}];
 const mapping={cat:{"dept":{text:"部定必修",class:"bg-dept-main",subClass:"bg-dept-sub"},"sch_req":{text:"校定必修",class:"bg-sch-req-main",subClass:"bg-sch-req-sub"},"sch_opt":{text:"校定選修",class:"bg-sch-opt-main",subClass:"bg-sch-opt-sub"}},type:{1:"一般科目",2:"專業科目",3:"實習科目"},role:{student:"學生",teacher:"教師",admin:"管理員"}};
 let DEPT_THRESHOLD=0,currentUser=null,editingStudentId=null;
@@ -160,20 +161,70 @@ async function handleAuth(){const sid=document.getElementById('authID').value.tr
 function switchAuthMode(){const isReg=document.getElementById('regFields').style.display==='none';document.getElementById('regFields').style.display=isReg?'block':'none';document.getElementById('authTitle').innerText=isReg?'註冊新帳號':'帳號登入';document.getElementById('authSwitchLink').innerText=isReg?'已有帳號？點此登入吧':'尚未有帳號？點此註冊';}
 async function handleLogout(){try{await sb.auth.signOut();window.location.reload();}catch(e){showMsg("登出失敗",'error');}}
 sb.auth.onAuthStateChange((event,session)=>{currentUser=session?session.user:null;if(!currentUser){toggleUIModal(true,'authModal');document.querySelectorAll('.section-dashboard,.table-container,.admin-backend').forEach(el=>el.style.display='none');}else{updateUI();}});
-function updateUI(){const tableContainer=document.getElementById('tableContainer'),adminBackend=document.getElementById('adminBackend'),dashboard=document.getElementById('dashboardSection'),userStatusDisplay=document.getElementById('userStatusDisplay');if(currentUser){document.querySelectorAll('.section-dashboard').forEach(el=>{if(el.id!=='adminBackend')el.style.display='block';});const m=currentUser.user_metadata,role=userDBRecord?.role||m.role||'student',displayName=userDBRecord?.full_name||m.full_name;userStatusDisplay.innerHTML=`你好，${displayName} (${mapping.role[role]||'使用者'}) | <a href="javascript:void(0)" onclick="openProfile()">個人資料</a> | <a href="javascript:void(0)" onclick="handleLogout()">登出</a>`;if(role==='admin'){if(!editingStudentId){dashboard.style.display='none';tableContainer.style.display='none';adminBackend.style.display='block';fetchAdminList();}else{dashboard.style.display='block';tableContainer.style.display='block';adminBackend.style.display='none';if(lastLoadedStudentId!==editingStudentId)loadFromCloud(editingStudentId);}}else{dashboard.style.display='block';tableContainer.style.display='block';adminBackend.style.display='none';if(!hasLoadedInitialData)loadFromCloud();}}}
-function openProfile(){if(!currentUser)return;const m=currentUser.user_metadata,curData=userDBRecord||m;document.getElementById('profAccount').value=curData.student_id||m.student_id||'';document.getElementById('profName').value=curData.full_name||m.full_name||'';document.getElementById('profTutor').value=curData.tutor||m.tutor||'未設定';document.getElementById('profPassword').value='';toggleUIModal(true,'profileModal');}
+function updateUI(){
+const tableContainer=document.getElementById('tableContainer'),adminBackend=document.getElementById('adminBackend'),dashboard=document.getElementById('dashboardSection'),userStatusDisplay=document.getElementById('userStatusDisplay'),saveBtn=document.getElementById('saveBtn'),teacherBackBtn=document.getElementById('teacherBackBtn');
+if(currentUser){
+document.querySelectorAll('.section-dashboard').forEach(el=>{if(el.id!=='adminBackend')el.style.display='block';});
+const m=currentUser.user_metadata,role=userDBRecord?.role||m.role||'student',displayName=userDBRecord?.full_name||m.full_name;
+userStatusDisplay.innerHTML=`你好，${displayName} (${mapping.role[role]||'使用者'}) | <a href="javascript:void(0)" onclick="openProfile()">個人資料</a> | <a href="javascript:void(0)" onclick="handleLogout()">登出</a>`;
+saveBtn.innerText=(role==='student')?'雲端存檔':'班級資料';
+if(editingStudentId){
+dashboard.style.display='block';tableContainer.style.display='block';adminBackend.style.display='none';
+if(lastLoadedStudentId!==editingStudentId)loadFromCloud(editingStudentId);
+}else if(role==='admin'||(role==='teacher'&&isViewingClassList)){
+dashboard.style.display='none';tableContainer.style.display='none';adminBackend.style.display='block';
+document.getElementById('backendTitle').innerText=role==='admin'?'資料管理':'班級資料管理';
+teacherBackBtn.style.display=role==='teacher'?'inline-block':'none';
+fetchAdminList();}else{
+dashboard.style.display='block';tableContainer.style.display='block';adminBackend.style.display='none';
+if(!hasLoadedInitialData)loadFromCloud();
+}}}
+function handleMainAction(){const role=userDBRecord?.role||currentUser?.user_metadata?.role||'student';if(role==='student'){saveToCloud();}else{isViewingClassList=true;editingStudentId=null;updateUI();}}
+function openProfile(){if(!currentUser)return;const m=currentUser.user_metadata,curData=userDBRecord||m,role=curData.role||'student';document.getElementById('profAccount').value=curData.student_id||'';document.getElementById('profName').value=curData.full_name||'';document.getElementById('profTutorLabel').innerText=role==='teacher'?'任教班級':'導師 (僅管理員可更正)';document.getElementById('profTutor').value=curData.tutor||'未設定';document.getElementById('profPassword').value='';toggleUIModal(true,'profileModal');}
 async function updateProfile(){const n=document.getElementById('profName').value,p=document.getElementById('profPassword').value,d={data:{full_name:n}};if(p)d.password=p;try{await sb.auth.updateUser(d);await sb.from('grad_checks').update({full_name:n}).eq('id',currentUser.id);showMsg("資料已更新！");hasLoadedInitialData=false;await loadFromCloud();toggleUIModal(false,'profileModal');}catch(e){showMsg(e.message,'error');}}
-async function saveToCloud(isAuto=false){if(!currentUser)return;const checks={};document.querySelectorAll(".toggle-checkbox").forEach(c=>checks[c.id]=c.checked);const res=calculateStats(),targetId=editingStudentId||currentUser.id,m=currentUser.user_metadata;const targetData=(targetId===currentUser.id)?(userDBRecord||m):adminListData.find(s=>s.id===targetId);const data={id:targetId,credits_json:checks,total_credits:res.total,updated_at:new Date(),full_name:(editingStudentId?document.getElementById('targetStudentName').innerText:(userDBRecord?.full_name||m.full_name)),student_id:(targetData?.student_id||m.student_id),tutor:(targetData?.tutor||m.tutor||'未設定'),role:(targetData?.role||m.role||'student')};const{error}=await sb.from('grad_checks').upsert(data);if(error){if(!isAuto)showMsg(error.message,'error');}else{if(!isAuto)showMsg("同步成功！");}}
+async function saveToCloud(isAuto=false){
+if(!currentUser)return;
+const checks={};document.querySelectorAll(".toggle-checkbox").forEach(c=>checks[c.id]=c.checked);
+const res=calculateStats(),targetId=editingStudentId||currentUser.id,m=currentUser.user_metadata;
+const targetData=(targetId===currentUser.id)?(userDBRecord||m):adminListData.find(s=>s.id===targetId);
+const data={id:targetId,credits_json:checks,total_credits:res.total,updated_at:new Date(),full_name:(editingStudentId?document.getElementById('targetStudentName').innerText:(userDBRecord?.full_name||m.full_name)),student_id:(targetData?.student_id||m.student_id),tutor:(targetData?.tutor||m.tutor||'未設定'),role:(targetData?.role||m.role||'student')};
+const{error}=await sb.from('grad_checks').upsert(data);
+if(error){if(!isAuto)showMsg(error.message,'error');}else{if(!isAuto)showMsg("同步成功！");}
+}
 async function deleteStudentData(id,name){if(!confirm(`確定要刪除「${name}」資料嗎？`))return;await sb.from('grad_checks').delete().eq('id',id);showMsg("已刪除");fetchAdminList();}
 async function enterAdminEditMode(id,name){editingStudentId=id;document.getElementById('adminEditBanner').style.display='block';document.getElementById('targetStudentName').innerText=name;updateUI();}
 function exitAdminEditMode(){editingStudentId=null;lastLoadedStudentId=null;document.getElementById('adminEditBanner').style.display='none';updateUI();}
-function openAdminUserEdit(index){const s=adminListData[index];if(!s)return;document.getElementById('editUserId').value=s.id;document.getElementById('editUserSid').value=s.student_id||'';document.getElementById('editUserName').value=s.full_name||'';document.getElementById('editUserRole').value=s.role||'student';document.getElementById('editUserTutor').value=s.tutor||'未設定';document.getElementById('editUserPwd').value='';toggleUIModal(true,'adminUserModal');}
+function toggleAdminTutorField(role,currentVal="未設定"){const label=document.getElementById('editTutorLabel'),wrapper=document.getElementById('editTutorWrapper');if(role==='teacher'){label.innerText="任教班級";wrapper.innerHTML=`<input type="text" id="editUserTutor" value="${currentVal}" placeholder="請輸入任教班級">`;}else{label.innerText="導師";let html=`<select id="editUserTutor"><option value="未設定">未設定</option>`;teacherNames.forEach(tn=>{html+=`<option value="${tn}" ${tn===currentVal?'selected':''}>${tn}</option>`;});html+=`</select>`;wrapper.innerHTML=html;}}
+function openAdminUserEdit(index){const s=adminListData[index];if(!s)return;document.getElementById('editUserId').value=s.id;document.getElementById('editUserSid').value=s.student_id||'';document.getElementById('editUserName').value=s.full_name||'';document.getElementById('editUserRole').value=s.role||'student';toggleAdminTutorField(s.role||'student',s.tutor||'未設定');toggleUIModal(true,'adminUserModal');}
 async function saveAdminUserEdit(){const id=document.getElementById('editUserId').value,sid=document.getElementById('editUserSid').value,n=document.getElementById('editUserName').value,r=document.getElementById('editUserRole').value,t=document.getElementById('editUserTutor').value;try{const{error}=await sb.from('grad_checks').update({student_id:sid,full_name:n,role:r,tutor:t}).eq('id',id);if(error)throw error;showMsg("帳號資料已更新");toggleUIModal(false,'adminUserModal');fetchAdminList();}catch(e){showMsg(e.message,'error');}}
 async function loadFromCloud(tid=null){const uid=tid||currentUser.id,{data}=await sb.from('grad_checks').select('*').eq('id',uid).single();if(data){if(!tid){userDBRecord=data;hasLoadedInitialData=true;updateUI();}else{lastLoadedStudentId=tid;}if(data.credits_json){document.querySelectorAll(".toggle-checkbox").forEach(c=>c.checked=false);Object.keys(data.credits_json).forEach(id=>{const el=document.getElementById(id);if(el)el.checked=data.credits_json[id];});calculate();}}else if(!tid&&currentUser){await saveToCloud(true);}}
-async function fetchAdminList(){const sortType=document.getElementById('adminSort').value,{data}=await sb.from('grad_checks').select('*'),b=document.getElementById('adminListBody');b.innerHTML="";if(data){adminListData=data;if(sortType==='save')adminListData.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at));else if(sortType==='join')adminListData.sort((a,b)=>new Date(a.created_at||a.updated_at)-new Date(b.created_at||b.updated_at));else if(sortType==='sid')adminListData.sort((a,b)=>(a.student_id||'').localeCompare(b.student_id||'',undefined,{numeric:true}));adminListData.forEach((s,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}','${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}','${s.full_name}')">刪除資料</button></td>`;b.appendChild(tr);});}}
+async function fetchAdminList(){
+const sortType=document.getElementById('adminSort').value,{data}=await sb.from('grad_checks').select('*'),b=document.getElementById('adminListBody');b.innerHTML="";
+if(data){
+const m=currentUser.user_metadata,role=userDBRecord?.role||m.role||'student',me=userDBRecord?.full_name||m.full_name;
+teacherNames=data.filter(u=>u.role==='teacher').map(u=>u.full_name);
+adminListData=data;
+if(role==='teacher') adminListData=adminListData.filter(s=>s.tutor===me);
+if(sortType==='save')adminListData.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at));else if(sortType==='join')adminListData.sort((a,b)=>new Date(a.created_at||a.updated_at)-new Date(b.created_at||b.updated_at));else if(sortType==='sid')adminListData.sort((a,b)=>(a.student_id||'').localeCompare(b.student_id||'',undefined,{numeric:true}));
+adminListData.forEach((s,i)=>{
+const tr=document.createElement('tr');
+let btns=`<button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}','${s.full_name}')">觀看檢核表</button>`;
+if(role==='admin'){btns+=`<button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}','${s.full_name}')">刪除資料</button>`;}
+tr.innerHTML=`<td>${s.full_name}</td><td>${s.student_id}</td><td>${btns}</td>`;
+b.appendChild(tr);
+});
+}}
 function renderTable(){const tbody=document.getElementById("tableBody");tbody.innerHTML="";const countMap={};curriculum.forEach(i=>{if(!countMap[i.cat])countMap[i.cat]={t:0,types:{}};countMap[i.cat].t++;if(!countMap[i.cat].types[i.type])countMap[i.cat].types[i.type]=0;countMap[i.cat].types[i.type]++;});let rC={},rT={};curriculum.forEach((item,index)=>{const tr=document.createElement("tr");if(!rC[item.cat]){let td=document.createElement("td");td.innerText=mapping.cat[item.cat].text;td.className="col-cat-major "+mapping.cat[item.cat].class;td.rowSpan=countMap[item.cat].t;tr.appendChild(td);rC[item.cat]=true;rT[item.cat]={};}if(!rT[item.cat][item.type]){let td=document.createElement("td");td.innerText=mapping.type[item.type];td.className="col-cat-minor "+mapping.cat[item.cat].subClass;td.rowSpan=countMap[item.cat].types[item.type];tr.appendChild(td);rT[item.cat][item.type]=true;}let tdN=document.createElement("td");tdN.innerHTML=item.name;tdN.className="col-name";tr.appendChild(tdN);item.credits.forEach((c,sIdx)=>{let td=document.createElement("td");td.className="col-sem";if(c>0){let id=`chk-${index}-${sIdx}`;td.innerHTML=`<input type="checkbox" class="toggle-checkbox" id="${id}" data-val="${c}" data-cat="${item.cat}" data-type="${item.type}" onchange="calculate();saveToCloud(true);" checked><label class="score-label" for="${id}">${c}</label>`;}else{td.innerText="-";td.className="zero-score";}tr.appendChild(td);});tbody.appendChild(tr);});}
 function calculateStats(){let total=0,dept=0,prof=0,prac=0;document.querySelectorAll(".toggle-checkbox:checked").forEach(input=>{let v=parseInt(input.dataset.val),c=input.dataset.cat,t=parseInt(input.dataset.type);total+=v;if(c==='dept')dept+=v;if(t==2||t==3)prof+=v;if(t==3)prac+=v;});return{total,pass:(total>=160&&dept>=DEPT_THRESHOLD&&prof>=60&&prac>=45)};}
-function calculate(){const{total,pass}=calculateStats();let deptVal=0,profVal=0,pracVal=0;document.querySelectorAll(".toggle-checkbox:checked").forEach(input=>{let v=parseInt(input.dataset.val),c=input.dataset.cat,t=parseInt(input.dataset.type);if(c==='dept')deptVal+=v;if(t==2||t==3)profVal+=v;if(t==3)pracVal+=v;});const cTotal=document.getElementById("cell-total");if(cTotal){cTotal.innerText=total;cTotal.style.backgroundColor=total>=160?"#d4edda":"#f8d7da";}const cDept=document.getElementById("cell-dept");if(cDept){cDept.innerText=deptVal;cDept.style.backgroundColor=deptVal>=DEPT_THRESHOLD?"#d4edda":"#f8d7da";}const cProf=document.getElementById("cell-prof-prac");if(cProf){cProf.innerText=profVal;cProf.style.backgroundColor=profVal>=60?"#d4edda":"#f8d7da";}const cPrac=document.getElementById("cell-prac");if(cPrac){cPrac.innerText=pracVal;cPrac.style.backgroundColor=pracVal>=45?"#d4edda":"#f8d7da";}const st=document.getElementById("finalStatus");if(st){st.innerText=pass?"唉呦不錯喔~你竟然可以畢業":"你不能畢業欸~好可憐";st.className="status-bar "+(pass?"status-pass text-white":"status-fail text-white");}}
+function calculate(){
+const{total,pass}=calculateStats();let deptVal=0,profVal=0,pracVal=0;document.querySelectorAll(".toggle-checkbox:checked").forEach(input=>{let v=parseInt(input.dataset.val),c=input.dataset.cat,t=parseInt(input.dataset.type);if(c==='dept')deptVal+=v;if(t==2||t==3)profVal+=v;if(t==3)pracVal+=v;});const cTotal=document.getElementById("cell-total");if(cTotal){cTotal.innerText=total;cTotal.style.backgroundColor=total>=160?"#d4edda":"#f8d7da";}const cDept=document.getElementById("cell-dept");if(cDept){cDept.innerText=deptVal;cDept.style.backgroundColor=deptVal>=DEPT_THRESHOLD?"#d4edda":"#f8d7da";}const cProf=document.getElementById("cell-prof-prac");if(cProf){cProf.innerText=profVal;cProf.style.backgroundColor=profVal>=60?"#d4edda":"#f8d7da";}const cPrac=document.getElementById("cell-prac");if(cPrac){cPrac.innerText=pracVal;cPrac.style.backgroundColor=pracVal>=45?"#d4edda":"#f8d7da";}
+const st=document.getElementById("finalStatus");
+if(st){
+const m=currentUser?.user_metadata,role=userDBRecord?.role||m?.role||'student';
+if(role==='teacher'||role==='admin'){st.innerText=pass?"試算結果：符合畢業門檻":"試算結果：尚未達到畢業門檻";}
+else{st.innerText=pass?"唉呦不錯喔~你竟然可以畢業":"你不能畢業欸~好可憐";}
+st.className="status-bar "+(pass?"status-pass text-white":"status-fail text-white");
+}}
 function setAllStatus(p){document.querySelectorAll(".toggle-checkbox").forEach(chk=>{chk.checked=p;});calculate();saveToCloud(true);}
 initThresholds();renderTable();
 </script>
