@@ -208,6 +208,55 @@
 
     .zero-score { color: #e0e0e0; font-size: 1em; background: #fafafa; }
 
+    /* --- 使用說明專屬樣式 --- */
+    .modal-body ul.score-examples { padding-left: 0; list-style: none; margin: 20px 0; }
+    .modal-body ul.score-examples li { margin-bottom: 18px; display: flex; align-items: center; }
+    .modal-score-example {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px; height: 50px; 
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 1.6rem; 
+      margin-right: 20px; 
+      box-sizing: border-box; 
+      flex-shrink: 0; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .modal-score-pass {
+      color: #000;
+      background-color: #fff;
+      border: 2px solid #eee; 
+      position: relative;
+    }
+    .modal-score-pass::after {
+      content: '✔'; font-size: 0.6em; color: #28a745; font-weight: 900;
+      position: absolute; right: 3px; top: 2px; line-height: 1;
+    }
+    .modal-score-fail {
+      background-color: #fff5f5;
+      color: #dc3545;
+      border: 2px solid #ffdce0;
+      box-shadow: none;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 14px;      
+      font-size: 1.3rem;      
+      font-weight: 900;        
+      border-radius: 8px;     
+      margin-right: 12px;     
+      vertical-align: middle; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      line-height: 1.2;
+    }
+    .badge-green { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+    .badge-red   { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+    .modal-body ul.status-list { padding-left: 0; list-style: none; margin-top: 15px; }
+    .modal-body ul.status-list li { margin-bottom: 15px; display: flex; align-items: center; }
+    /* --- 結束 --- */
+
     .modal-overlay {
       display: none;
       position: fixed;
@@ -388,10 +437,12 @@
 <body>
   <div id="msgBox"></div>
 
+  <!-- 用戶頂部 -->
   <div id="statusHeader" class="section-dashboard" style="box-shadow:none; border-bottom: 1px solid #eee; padding-bottom: 5px;">
     <div id="userStatusDisplay" style="font-size: 0.8rem; color: #888; text-align: right; margin-bottom: 5px;"></div>
   </div>
 
+  <!-- 試算儀表板 -->
   <div id="dashboardSection" class="section-dashboard" style="margin-top: -5px;">
     <div id="adminEditBanner" class="admin-edit-banner" style="display:none; background:#6366f1; color:white; padding:10px; text-align:center; font-weight:bold; border-radius:8px; margin:10px;">⚠️ 修改模式：正在編輯 <span id="targetStudentName">學生</span> 的資料 | <a href="javascript:void(0)" onclick="exitAdminEditMode()" style="color:white; text-decoration:underline;">取消返回列表</a></div>
     <div id="finalStatus" class="status-bar status-fail">計算中...</div>
@@ -477,6 +528,7 @@
     </div>
   </div>
 
+  <!-- 個人資料彈窗 -->
   <div id="profileModal" class="modal-overlay">
     <div class="modal-content" style="max-width:400px;">
       <div class="modal-header"><span>個人資料管理</span><span class="close-modal-btn" onclick="toggleUIModal(false,'profileModal')">&times;</span></div>
@@ -485,7 +537,7 @@
       <div class="input-group"><label id="profYearLabel">入學年份</label><select id="profEntryYear" disabled></select></div>
       <div class="input-group"><label id="profDeptLabel">科系</label><select id="profEntryDept" disabled></select></div>
       <div id="profStudentTutorArea" class="input-group">
-        <label id="profTutorLabel">導師</label>
+        <label id="profTutorLabel">導師 (由系統對應)</label>
         <input type="text" id="profTutor" disabled style="background:#eee;">
       </div>
       <p style="font-size:0.85rem; color:#d946ef; margin-bottom:15px; font-weight:bold;">※ 入學年份與科系如有誤請洽管理員更正。</p>
@@ -494,6 +546,7 @@
     </div>
   </div>
 
+  <!-- 管理員編輯彈窗 -->
   <div id="adminUserModal" class="modal-overlay">
     <div class="modal-content" style="max-width:400px;">
       <div class="modal-header"><span>更改帳號資料</span><span class="close-modal-btn" onclick="toggleUIModal(false,'adminUserModal')">&times;</span></div>
@@ -520,6 +573,7 @@
     </div>
   </div>
 
+  <!-- 刪除確認彈窗 -->
   <div id="confirmModal" class="modal-overlay">
     <div class="modal-content" style="max-width:300px; text-align:center;">
       <div class="modal-header"><span>確認刪除</span></div>
@@ -531,32 +585,45 @@
     </div>
   </div>
 
+  <!-- 使用說明彈窗 (還原內容與格式) -->
   <div id="helpModal" class="modal-overlay" onclick="handleOutsideClick(event)">
     <div class="modal-content">
-      <div class="modal-header"><span>使用說明</span><span class="close-modal-btn" onclick="toggleUIModal(false,'helpModal')">&times;</span></div>
+      <div class="modal-header">
+        <span>使用說明</span>
+        <span class="close-modal-btn" onclick="toggleUIModal(false, 'helpModal')">&times;</span>
+      </div>
       <div class="modal-body">
         <p>小孩們~歡迎來到殘酷的畢業檢核表<br>請依自己的成績切換狀態</p>
-        <p style="margin-top:15px; font-weight:bold;">操作說明：點擊表格中的數字</p>
-        <ul style="list-style:none; padding:0; margin:15px 0;">
-          <li style="margin-bottom:12px; display:flex; align-items:center;">
-            <span class="status-badge badge-green" style="font-size:1rem; margin-right:10px; background-color:#28a745; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px; color:white;">3</span>
+        <p style="margin-top: 15px; font-weight:bold;">切換狀態：點擊表格中的數字</p>
+        <ul class="score-examples">
+          <li>
+            <span class="modal-score-example modal-score-pass">3</span>
             <span>代表該科 <strong>及　格</strong> (獲得學分)</span>
           </li>
-          <li style="display:flex; align-items:center;">
-            <span class="status-badge badge-red" style="font-size:1rem; margin-right:10px; background-color:#dc3545; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px; color:white;">3</span>
+          <li>
+            <span class="modal-score-example modal-score-fail">3</span>
             <span>代表該科 <strong>不及格</strong> (未獲學分)</span>
           </li>
         </ul>
-        <p style="margin-top:25px; font-weight:bold;">上方儀表板說明</p>
-        <ul style="list-style:none; padding:0; margin:15px 0;">
-          <li style="margin-bottom:10px; display:flex; align-items:center;"><span style="background-color:#28a745; color:white; padding:2px 8px; border-radius:4px; margin-right:8px;">綠底</span> 已達畢業門檻</li>
-          <li style="display:flex; align-items:center;"><span style="background-color:#dc3545; color:white; padding:2px 8px; border-radius:4px; margin-right:8px;">紅底</span> 未達畢業門檻</li>
+        <p style="margin-top: 25px; font-weight:bold;">上方儀表板說明</p>
+        <ul class="status-list">
+          <li>
+            <span class="status-badge badge-green">綠底</span> 
+            <span>代表該項目已達畢業門檻</span>
+          </li>
+          <li>
+            <span class="status-badge badge-red">紅底</span> 
+            <span>代表該項目未達畢業門檻</span>
+          </li>
         </ul>
-        <p style="font-size:0.95rem; color:#666; margin-top:25px; border-top:1px solid #eee; padding-top:15px; text-align:center;">記住哦~系統只是試算 最終結果依教務處註冊組為準<br>by 放不下新中的人製作</p>
+        <p style="font-size:0.95rem; color:#666; margin-top:25px; border-top:1px solid #eee; padding-top:15px; text-align: center;">
+          記住哦~系統只是試算 最終結果依教務處註冊組為準<br>by 放不下新中的人製作
+        </p>
       </div>
     </div>
   </div>
 
+  <!-- 檢核表表格 -->
   <div id="tableContainer" class="table-container">
     <table class="main-table">
       <colgroup>
@@ -591,7 +658,6 @@
           SB_KEY = "sb_publishable_ojrdIB0TeCnl8eZXbzWsdQ_2W3JB3xT";
     const sb = supabase.createClient(SB_URL, SB_KEY);
     
-    // 名單選項
     const YEAR_OPTIONS = ["111","112", "113", "114", "115"];
     const DEPT_OPTIONS = ["普通科", "體育班", "農經科", "園藝科", "商經科", "資處科"];
 
@@ -646,8 +712,8 @@
       {cat:"sch_opt",type:3,name:"軟體應用",credits:[0,0,3,0,0,0]},
       {cat:"sch_opt",type:3,name:"會計實務",credits:[0,0,2,2,4,4]},
       {cat:"sch_opt",type:3,name:"經濟應用實務",credits:[0,0,0,0,4,4]},
-      {cat:"sch_opt",type:3,name:"同科單班(2選1)<br>網頁規劃實務/進階軟體應用",credits:[0,0,0,3,0,0]},
-      {cat:"sch_opt",type:3,name:"同科單班(2選1)<br>進階程式設計/電腦繪圖實務",credits:[0,0,0,0,2,0]},
+      {cat:"sch_opt",type:3,name:"網頁規劃/進階軟體應用",credits:[0,0,0,3,0,0]},
+      {cat:"sch_opt",type:3,name:"進階程式/電腦繪圖實務",credits:[0,0,0,0,2,0]},
       {cat:"sch_opt",type:3,name:"跨群選修(6選1)",credits:[0,0,2,2,0,0]}
     ];
 
@@ -964,7 +1030,6 @@
     }
 
     async function openAdminUserEdit(index) {
-      // 在過濾後的清單中尋找
       const filtered = applyFilters();
       const s = filtered[index];
       if (!s) return;
@@ -1155,7 +1220,7 @@
       if (cT) { cT.innerText = total; cT.style.backgroundColor = total >= 160 ? "#d4edda" : "#f8d7da"; cT.style.color = "#333"; }
       if (cD) { cD.innerText = dV; cD.style.backgroundColor = dV >= DEPT_THRESHOLD ? "#d4edda" : "#f8d7da"; cD.style.color = "#333"; }
       if (cF) { cF.innerText = fV; cF.style.backgroundColor = fV >= 60 ? "#d4edda" : "#f8d7da"; cF.style.color = "#333"; }
-      if (cP) { pP = pV; cP.innerText = pV; cP.style.backgroundColor = pV >= 45 ? "#d4edda" : "#f8d7da"; cP.style.color = "#333"; }
+      if (cP) { cP.innerText = pV; cP.style.backgroundColor = pV >= 45 ? "#d4edda" : "#f8d7da"; cP.style.color = "#333"; }
       const st = document.getElementById("finalStatus");
       if (st) {
         const m = currentUser?.user_metadata, role = userDBRecord?.role || m?.role || 'student';
