@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>畢業學分檢核系統</title>
+  <title>112入學資處科畢業檢核表</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     html, body {
@@ -281,10 +281,27 @@
       gap: 10px;
     }
 
+    .admin-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+    }
+
+    .admin-toolbar > * {
+      flex: 1;
+      min-width: 140px;
+    }
+
     .admin-table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
+      min-width: 700px;
     }
 
     .admin-table th, .admin-table td {
@@ -294,9 +311,10 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-size: 0.9rem;
     }
 
-    .admin-table th { background: #f8f9fa; color: #666; font-size: 0.9rem; }
+    .admin-table th { background: #f8f9fa; color: #666; font-weight: bold; }
     
     .btn-mini {
       padding: 6px 12px;
@@ -321,13 +339,24 @@
     }
     .input-group select:disabled { background-color: #eee; cursor: not-allowed; }
 
-    .sort-select {
-      padding: 6px 12px;
+    .sort-select, .admin-filter-input {
+      padding: 8px;
       border-radius: 6px;
       border: 1px solid #ddd;
       font-size: 0.9rem;
       outline: none;
     }
+
+    .role-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: white;
+      font-weight: bold;
+    }
+    .badge-student { background-color: #3b82f6; }
+    .badge-teacher { background-color: #10b981; }
+    .badge-admin { background-color: #6366f1; }
 
     #msgBox {
       position: fixed;
@@ -352,18 +381,17 @@
       .score-label { font-size: 1.1em; }
       .col-name { font-size: 0.75rem; padding-left: 2px !important; }
       .main-table thead th { font-size: 0.7rem; }
+      .admin-toolbar > * { flex: 1 1 100%; }
     }
   </style>
 </head>
 <body>
   <div id="msgBox"></div>
 
-  <!-- 用戶頂部 -->
   <div id="statusHeader" class="section-dashboard" style="box-shadow:none; border-bottom: 1px solid #eee; padding-bottom: 5px;">
     <div id="userStatusDisplay" style="font-size: 0.8rem; color: #888; text-align: right; margin-bottom: 5px;"></div>
   </div>
 
-  <!-- 試算儀表板 -->
   <div id="dashboardSection" class="section-dashboard" style="margin-top: -5px;">
     <div id="adminEditBanner" class="admin-edit-banner" style="display:none; background:#6366f1; color:white; padding:10px; text-align:center; font-weight:bold; border-radius:8px; margin:10px;">⚠️ 修改模式：正在編輯 <span id="targetStudentName">學生</span> 的資料 | <a href="javascript:void(0)" onclick="exitAdminEditMode()" style="color:white; text-decoration:underline;">取消返回列表</a></div>
     <div id="finalStatus" class="status-bar status-fail">計算中...</div>
@@ -393,30 +421,38 @@
     </div>
   </div>
 
-  <!-- 名單管理區 -->
+  <!-- 資料管理區 -->
   <div id="adminBackend" class="admin-backend">
     <div class="admin-header">
       <div style="display:flex; align-items:center; gap:10px;">
         <span id="backendTitle">資料管理</span>
         <button id="teacherBackBtn" class="btn-mini" style="background:#6c757d; display:none;" onclick="handleTeacherReturnToTrial()">返回檢核表試算</button>
       </div>
-      <select id="adminSort" class="sort-select" onchange="fetchAdminList()">
-        <option value="save">存檔時間 (新到舊)</option>
-        <option value="join">加入時間 (舊到新)</option>
-        <option value="sid">學號排序 (小到大)</option>
+    </div>
+
+    <!-- 管理工具列 -->
+    <div class="admin-toolbar">
+      <input type="text" id="adminSearchInput" class="admin-filter-input" placeholder="搜尋姓名或學號..." oninput="fetchAdminList(true)">
+      <select id="adminFilterYear" class="sort-select" onchange="fetchAdminList(true)">
+        <option value="all">所有年度</option>
+      </select>
+      <select id="adminFilterDept" class="sort-select" onchange="fetchAdminList(true)">
+        <option value="all">所有科系</option>
+      </select>
+      <select id="adminSort" class="sort-select" onchange="fetchAdminList(true)">
+        <option value="sid">學號排序</option>
+        <option value="name">姓名排序</option>
       </select>
     </div>
+
     <div style="overflow-x:auto">
       <table class="admin-table">
-        <colgroup>
-          <col style="width:25%;">
-          <col style="width:25%;">
-          <col style="width:50%;">
-        </colgroup>
         <thead>
           <tr>
             <th>姓名</th>
             <th>學號</th>
+            <th>身份</th>
+            <th>入學年/科系</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -441,7 +477,6 @@
     </div>
   </div>
 
-  <!-- 個人資料彈窗 -->
   <div id="profileModal" class="modal-overlay">
     <div class="modal-content" style="max-width:400px;">
       <div class="modal-header"><span>個人資料管理</span><span class="close-modal-btn" onclick="toggleUIModal(false,'profileModal')">&times;</span></div>
@@ -450,7 +485,7 @@
       <div class="input-group"><label id="profYearLabel">入學年份</label><select id="profEntryYear" disabled></select></div>
       <div class="input-group"><label id="profDeptLabel">科系</label><select id="profEntryDept" disabled></select></div>
       <div id="profStudentTutorArea" class="input-group">
-        <label id="profTutorLabel">導師 (由系統對應)</label>
+        <label id="profTutorLabel">導師</label>
         <input type="text" id="profTutor" disabled style="background:#eee;">
       </div>
       <p style="font-size:0.85rem; color:#d946ef; margin-bottom:15px; font-weight:bold;">※ 入學年份與科系如有誤請洽管理員更正。</p>
@@ -459,12 +494,11 @@
     </div>
   </div>
 
-  <!-- 管理員編輯彈窗 -->
   <div id="adminUserModal" class="modal-overlay">
     <div class="modal-content" style="max-width:400px;">
       <div class="modal-header"><span>更改帳號資料</span><span class="close-modal-btn" onclick="toggleUIModal(false,'adminUserModal')">&times;</span></div>
       <input type="hidden" id="editUserId">
-      <div class="input-group"><label>學號 (僅管理員可更正)</label><input type="text" id="editUserSid"></div>
+      <div class="input-group"><label>學號</label><input type="text" id="editUserSid"></div>
       <div class="input-group"><label>姓名</label><input type="text" id="editUserName"></div>
       <div class="input-group">
         <label>入學年份</label>
@@ -486,7 +520,6 @@
     </div>
   </div>
 
-  <!-- 刪除確認彈窗 -->
   <div id="confirmModal" class="modal-overlay">
     <div class="modal-content" style="max-width:300px; text-align:center;">
       <div class="modal-header"><span>確認刪除</span></div>
@@ -498,7 +531,6 @@
     </div>
   </div>
 
-  <!-- 使用說明彈窗 -->
   <div id="helpModal" class="modal-overlay" onclick="handleOutsideClick(event)">
     <div class="modal-content">
       <div class="modal-header"><span>使用說明</span><span class="close-modal-btn" onclick="toggleUIModal(false,'helpModal')">&times;</span></div>
@@ -507,25 +539,24 @@
         <p style="margin-top:15px; font-weight:bold;">操作說明：點擊表格中的數字</p>
         <ul style="list-style:none; padding:0; margin:15px 0;">
           <li style="margin-bottom:12px; display:flex; align-items:center;">
-            <span class="status-badge badge-green" style="font-size:1rem; margin-right:10px;">3</span>
+            <span class="status-badge badge-green" style="font-size:1rem; margin-right:10px; background-color:#28a745; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px; color:white;">3</span>
             <span>代表該科 <strong>及　格</strong> (獲得學分)</span>
           </li>
           <li style="display:flex; align-items:center;">
-            <span class="status-badge badge-red" style="font-size:1rem; margin-right:10px; background:#fff5f5;">3</span>
+            <span class="status-badge badge-red" style="font-size:1rem; margin-right:10px; background-color:#dc3545; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:4px; color:white;">3</span>
             <span>代表該科 <strong>不及格</strong> (未獲學分)</span>
           </li>
         </ul>
         <p style="margin-top:25px; font-weight:bold;">上方儀表板說明</p>
         <ul style="list-style:none; padding:0; margin:15px 0;">
-          <li style="margin-bottom:10px; display:flex; align-items:center;"><span class="status-badge badge-green">綠底</span> 已達畢業門檻</li>
-          <li style="display:flex; align-items:center;"><span class="status-badge badge-red">紅底</span> 未達畢業門檻</li>
+          <li style="margin-bottom:10px; display:flex; align-items:center;"><span style="background-color:#28a745; color:white; padding:2px 8px; border-radius:4px; margin-right:8px;">綠底</span> 已達畢業門檻</li>
+          <li style="display:flex; align-items:center;"><span style="background-color:#dc3545; color:white; padding:2px 8px; border-radius:4px; margin-right:8px;">紅底</span> 未達畢業門檻</li>
         </ul>
         <p style="font-size:0.95rem; color:#666; margin-top:25px; border-top:1px solid #eee; padding-top:15px; text-align:center;">記住哦~系統只是試算 最終結果依教務處註冊組為準<br>by 放不下新中的人製作</p>
       </div>
     </div>
   </div>
 
-  <!-- 檢核表表格 -->
   <div id="tableContainer" class="table-container">
     <table class="main-table">
       <colgroup>
@@ -561,7 +592,7 @@
     const sb = supabase.createClient(SB_URL, SB_KEY);
     
     // 名單選項
-    const YEAR_OPTIONS = ["112", "113", "114", "115"];
+    const YEAR_OPTIONS = ["111","112", "113", "114", "115"];
     const DEPT_OPTIONS = ["普通科", "體育班", "農經科", "園藝科", "商經科", "資處科"];
 
     let userDBRecord = null, 
@@ -641,14 +672,15 @@
     }
 
     function initDropdowns(showNotSet = false) {
-      const yearIds = ['authEntryYear', 'profEntryYear', 'editUserEntryYear'];
-      const deptIds = ['authEntryDept', 'profEntryDept', 'editUserEntryDept'];
+      const yearIds = ['authEntryYear', 'profEntryYear', 'editUserEntryYear', 'adminFilterYear'];
+      const deptIds = ['authEntryDept', 'profEntryDept', 'editUserEntryDept', 'adminFilterDept'];
       
       yearIds.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         let html = '';
-        if (showNotSet) html += '<option value="未設定">未設定</option>';
+        if (id === 'adminFilterYear') html = '<option value="all">所有年度</option>';
+        else if (showNotSet) html = '<option value="未設定">未設定</option>';
         html += YEAR_OPTIONS.map(y => `<option value="${y}">${y}年</option>`).join('');
         el.innerHTML = html;
       });
@@ -657,7 +689,8 @@
         const el = document.getElementById(id);
         if (!el) return;
         let html = '';
-        if (showNotSet) html += '<option value="未設定">未設定</option>';
+        if (id === 'adminFilterDept') html = '<option value="all">所有科系</option>';
+        else if (showNotSet) html = '<option value="未設定">未設定</option>';
         html += DEPT_OPTIONS.map(d => `<option value="${d}">${d}</option>`).join('');
         el.innerHTML = html;
       });
@@ -705,7 +738,6 @@
                 entryDept = document.getElementById('authEntryDept').value;
           if (!name) throw new Error("請輸入姓名");
           
-          // 註冊時自動匹配導師
           const matchedTutor = await findTutorByYearDept(entryYear, entryDept);
 
           const { error } = await sb.auth.signUp({
@@ -841,8 +873,8 @@
         document.getElementById('profDeptLabel').innerText = "科系";
       } else {
         tutorArea.style.display = 'none';
-        document.getElementById('profYearLabel').innerText = "負責年份";
-        document.getElementById('profDeptLabel').innerText = "負責科系";
+        document.getElementById('profYearLabel').innerText = "入學年份";
+        document.getElementById('profDeptLabel').innerText = "科系";
       }
       document.getElementById('profPassword').value = '';
       toggleUIModal(true, 'profileModal');
@@ -870,7 +902,6 @@
       const entryYear = curRecord?.entry_year || m.entry_year || '未設定';
       const entryDept = curRecord?.entry_dept || m.entry_dept || '未設定';
 
-      // 只有在雲端存檔時，如果是學生且導師為空，才執行自動匹配
       let matchedTutor = curRecord?.tutor || '未設定';
       if (role === 'student' && (matchedTutor === '未設定' || !matchedTutor)) {
         matchedTutor = await findTutorByYearDept(entryYear, entryDept);
@@ -933,7 +964,9 @@
     }
 
     async function openAdminUserEdit(index) {
-      const s = adminListData[index];
+      // 在過濾後的清單中尋找
+      const filtered = applyFilters();
+      const s = filtered[index];
       if (!s) return;
       initDropdowns(true); 
       document.getElementById('editUserId').value = s.id;
@@ -976,25 +1009,80 @@
       } else if (!tid && currentUser) { await saveToCloud(true); }
     }
 
-    async function fetchAdminList() {
-      const sortType = document.getElementById('adminSort').value, { data } = await sb.from('grad_checks').select('*'), b = document.getElementById('adminListBody');
-      b.innerHTML = "";
-      if (data) {
-        const m = currentUser.user_metadata, role = userDBRecord?.role || m.role || 'student', myYear = userDBRecord?.entry_year || m.entry_year, myDept = userDBRecord?.entry_dept || m.entry_dept;
-        teacherNames = data.filter(u => u.role === 'teacher').map(u => u.full_name);
-        adminListData = data;
-        if (role === 'teacher') adminListData = adminListData.filter(s => s.entry_year === myYear && s.entry_dept === myDept && s.role === 'student');
-        if (sortType === 'save') adminListData.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-        else if (sortType === 'join') adminListData.sort((a, b) => new Date(a.created_at || a.updated_at) - new Date(b.created_at || b.updated_at));
-        else if (sortType === 'sid') adminListData.sort((a, b) => (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true }));
-        adminListData.forEach((s, i) => {
-          const tr = document.createElement('tr');
-          let btns = `<button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}','${s.full_name}')">觀看檢核表</button>`;
-          if (role === 'admin') btns += `<button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}','${s.full_name}')">刪除資料</button>`;
-          tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td>${btns}</td>`;
-          b.appendChild(tr);
-        });
+    async function fetchAdminList(onlyRefreshUI = false) {
+      if (!onlyRefreshUI) {
+        const { data } = await sb.from('grad_checks').select('*');
+        if (data) {
+          adminListData = data;
+          teacherNames = data.filter(u => u.role === 'teacher').map(u => u.full_name);
+        }
       }
+      renderAdminTable();
+    }
+
+    function applyFilters() {
+      const searchText = document.getElementById('adminSearchInput').value.toLowerCase();
+      const filterYear = document.getElementById('adminFilterYear').value;
+      const filterDept = document.getElementById('adminFilterDept').value;
+      const sortType = document.getElementById('adminSort').value;
+      
+      const m = currentUser.user_metadata;
+      const role = userDBRecord?.role || m.role || 'student';
+      const myYear = userDBRecord?.entry_year || m.entry_year;
+      const myDept = userDBRecord?.entry_dept || m.entry_dept;
+
+      let filtered = [...adminListData];
+
+      if (role === 'teacher') {
+        filtered = filtered.filter(s => s.entry_year === myYear && s.entry_dept === myDept && s.role === 'student');
+      }
+
+      if (searchText) {
+        filtered = filtered.filter(s => 
+          (s.full_name && s.full_name.toLowerCase().includes(searchText)) || 
+          (s.student_id && s.student_id.toLowerCase().includes(searchText))
+        );
+      }
+
+      if (filterYear !== 'all') filtered = filtered.filter(s => s.entry_year === filterYear);
+      if (filterDept !== 'all') filtered = filtered.filter(s => s.entry_dept === filterDept);
+
+      if (sortType === 'save') filtered.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+      else if (sortType === 'join') filtered.sort((a, b) => new Date(a.created_at || a.updated_at) - new Date(b.created_at || b.updated_at));
+      else if (sortType === 'sid') filtered.sort((a, b) => (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true }));
+      else if (sortType === 'name') filtered.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
+
+      return filtered;
+    }
+
+    function renderAdminTable() {
+      const b = document.getElementById('adminListBody');
+      b.innerHTML = "";
+      const filtered = applyFilters();
+      const m = currentUser.user_metadata;
+      const role = userDBRecord?.role || m.role || 'student';
+
+      filtered.forEach((s, i) => {
+        const tr = document.createElement('tr');
+        const roleText = mapping.role[s.role] || '使用者';
+        const roleClass = s.role === 'admin' ? 'badge-admin' : (s.role === 'teacher' ? 'badge-teacher' : 'badge-student');
+        const classInfo = (s.entry_year && s.entry_dept) ? `${s.entry_year}/${s.entry_dept}` : '未設定';
+        
+        let btns = `<button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}','${s.full_name}')">觀看</button>`;
+        if (role === 'admin') {
+          btns += `<button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">資料</button>
+                   <button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}','${s.full_name}')">刪除</button>`;
+        }
+        
+        tr.innerHTML = `
+          <td><b>${s.full_name}</b></td>
+          <td>${s.student_id || '-'}</td>
+          <td><span class="role-badge ${roleClass}">${roleText}</span></td>
+          <td>${classInfo}</td>
+          <td>${btns}</td>
+        `;
+        b.appendChild(tr);
+      });
     }
 
     function renderTable() {
@@ -1064,10 +1152,10 @@
         if (t == 3) pV += v;
       });
       const cT = document.getElementById("cell-total"), cD = document.getElementById("cell-dept"), cF = document.getElementById("cell-prof-prac"), cP = document.getElementById("cell-prac");
-      if (cT) { cT.innerText = total; cT.style.backgroundColor = total >= 160 ? "#d4edda" : "#f8d7da"; }
-      if (cD) { cD.innerText = dV; cD.style.backgroundColor = dV >= DEPT_THRESHOLD ? "#d4edda" : "#f8d7da"; }
-      if (cF) { cF.innerText = fV; cF.style.backgroundColor = fV >= 60 ? "#d4edda" : "#f8d7da"; }
-      if (cP) { cP.innerText = pV; cP.style.backgroundColor = pV >= 45 ? "#d4edda" : "#f8d7da"; }
+      if (cT) { cT.innerText = total; cT.style.backgroundColor = total >= 160 ? "#d4edda" : "#f8d7da"; cT.style.color = "#333"; }
+      if (cD) { cD.innerText = dV; cD.style.backgroundColor = dV >= DEPT_THRESHOLD ? "#d4edda" : "#f8d7da"; cD.style.color = "#333"; }
+      if (cF) { cF.innerText = fV; cF.style.backgroundColor = fV >= 60 ? "#d4edda" : "#f8d7da"; cF.style.color = "#333"; }
+      if (cP) { pP = pV; cP.innerText = pV; cP.style.backgroundColor = pV >= 45 ? "#d4edda" : "#f8d7da"; cP.style.color = "#333"; }
       const st = document.getElementById("finalStatus");
       if (st) {
         const m = currentUser?.user_metadata, role = userDBRecord?.role || m?.role || 'student';
