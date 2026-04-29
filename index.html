@@ -25,11 +25,11 @@
         .btn-admin { background-color: #6366f1; }
         .table-container { display: none; position: relative; background-color: white; width: 100%; overflow-x: hidden; }
         table.main-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0; padding: 0; }
-        .main-table thead th { background-color: #6c757d; color: white; height: 45px; border: 1px solid #999; font-size: 0.9rem; box-shadow: 0 2px 2px rgba(0,0,0,0.1); }
+        .main-table thead th { background-color: #6c757d; color: white; height: 45px; border: 1px solid #999; font-size: 0.85rem; box-shadow: 0 2px 2px rgba(0,0,0,0.1); }
         .main-table td { border: 1px solid #999; text-align: center; vertical-align: middle; height: 55px; padding: 2px; color: #333; overflow: hidden; word-break: break-all; }
         .col-cat-major { writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; font-weight: 800; font-size: 0.85rem; color: #000; }
         .col-cat-minor { font-weight: bold; font-size: 0.85rem; line-height: 1.2; padding: 0 2px; word-wrap: break-word; }
-        .col-name { text-align: left !important; padding-left: 4px !important; font-weight: bold; background-color: #fff; font-size: 0.9rem; line-height: 1.3; }
+        .col-name { text-align: left !important; padding-left: 4px !important; font-weight: bold; background-color: #fff; font-size: 0.85rem; line-height: 1.3; }
         .bg-dept-main { background-color: #ff9999 !important; }
         .bg-dept-sub { background-color: #ffcccc !important; }
         .bg-sch-req-main { background-color: #99ff99 !important; }
@@ -54,7 +54,7 @@
         .badge-green { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
         .badge-red { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .admin-backend { display: none; padding: 20px; background: white; margin: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .admin-header { font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; color: #333; border-left: 6px solid #6366f1; padding-left: 15px; }
+        .admin-header { font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; color: #333; border-left: 6px solid #6366f1; padding-left: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .admin-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .admin-table th, .admin-table td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .admin-table th { background: #f8f9fa; color: #666; font-size: 0.9rem; }
@@ -63,15 +63,10 @@
         .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
         .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
         .admin-edit-banner { display: none; background: #6366f1; color: white; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin: 10px; }
+        .sort-select { padding: 6px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.9rem; outline: none; }
         #msgBox { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: 50px; color: white; font-weight: bold; display: none; z-index: 6000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @media (max-width: 600px) {
-            .result-table td { font-size: 1.2rem; height: 40px; }
-            .status-bar { font-size: 1.1rem; }
-            .score-label { font-size: 1.1em; }
-            .col-name { font-size: 0.8rem; padding-left: 2px !important; }
-        }
+        @media (max-width: 600px) { .result-table td { font-size: 1.1rem; height: 40px; } .status-bar { font-size: 1rem; } .score-label { font-size: 1.1em; } .col-name { font-size: 0.75rem; padding-left: 2px !important; } .main-table thead th { font-size: 0.7rem; } }
     </style>
 </head>
 <body>
@@ -94,7 +89,14 @@
         </div>
     </div>
     <div id="adminBackend" class="admin-backend">
-        <div class="admin-header">資料管理</div>
+        <div class="admin-header">
+            <span>資料管理</span>
+            <select id="adminSort" class="sort-select" onchange="fetchAdminList()">
+                <option value="save">存檔時間 (新到舊)</option>
+                <option value="join">加入時間 (舊到新)</option>
+                <option value="sid">學號排序 (小到大)</option>
+            </select>
+        </div>
         <div style="overflow-x:auto">
             <table class="admin-table">
                 <colgroup><col style="width: 25%;"><col style="width: 25%;"><col style="width: 50%;"></colgroup>
@@ -116,9 +118,9 @@
     <div id="profileModal" class="modal-overlay">
         <div class="modal-content" style="max-width:400px;">
             <div class="modal-header"><span>個人資料管理</span><span class="close-modal-btn" onclick="toggleUIModal(false, 'profileModal')">&times;</span></div>
-            <div class="input-group"><label>帳號 (僅管理員可更正)</label><input type="text" id="profAccount" disabled style="background:#eee;"></div>
+            <div class="input-group"><label>帳號 (不可修改)</label><input type="text" id="profAccount" disabled style="background:#eee;"></div>
             <div class="input-group"><label>姓名</label><input type="text" id="profName" placeholder="請輸入姓名"></div>
-            <div class="input-group"><label>導師(未來開放導師管理權限)</label><input type="text" id="profTutor" disabled style="background:#eee;"></div>
+            <div class="input-group"><label>導師 (不可修改)</label><input type="text" id="profTutor" disabled style="background:#eee;"></div>
             <div class="input-group"><label>更改密碼 (不更改保持空白)</label><input type="password" id="profPassword"></div>
             <button class="action-btn btn-admin" style="width:100%;" onclick="updateProfile()">儲存修改</button>
         </div>
@@ -127,9 +129,11 @@
         <div class="modal-content" style="max-width:400px;">
             <div class="modal-header"><span>更改帳號資料</span><span class="close-modal-btn" onclick="toggleUIModal(false, 'adminUserModal')">&times;</span></div>
             <input type="hidden" id="editUserId">
-            <div class="input-group"><label>學號</label><input type="text" id="editUserSid"></div>
+            <div class="input-group"><label>學號 (僅管理員可更正)</label><input type="text" id="editUserSid"></div>
             <div class="input-group"><label>姓名</label><input type="text" id="editUserName"></div>
-            <div class="input-group"><label>導師</label><input type="text" id="editUserTutor"></div>
+            <div class="input-group"><label>導師(未來開放導師權限)</label><input type="text" id="editUserTutor"></div>
+            <div class="input-group"><label>重設密碼 (不更改保持空白)</label><input type="password" id="editUserPwd"></div>
+            <p style="font-size:0.75rem; color:#f44336; margin-bottom: 15px;">註：此處修改僅影響顯示資料，帳號密碼請至系統後台管理。</p>
             <button class="action-btn btn-admin" style="width:100%;" onclick="saveAdminUserEdit()">儲存帳號修改</button>
         </div>
     </div>
@@ -139,24 +143,16 @@
             <div class="modal-body">
                 <p>小孩們~歡迎來到殘酷的畢業檢核表<br>請依自己的成績切換狀態</p>
                 <p style="margin-top: 15px; font-weight:bold;">切換狀態：點擊表格中的數字</p>
-                <ul style="list-style:none; padding:0; margin:15px 0;">
-                    <li style="margin-bottom:12px; display:flex; align-items:center;"><span class="modal-score-example modal-score-pass">3</span><span>代表該科 <strong>及　格</strong> (獲得學分)</span></li>
-                    <li style="display:flex; align-items:center;"><span class="modal-score-example modal-score-fail">3</span><span>代表該科 <strong>不及格</strong> (未獲學分)</span></li>
-                </ul>
+                <ul style="list-style:none; padding:0; margin:15px 0;"><li style="margin-bottom:12px; display:flex; align-items:center;"><span class="modal-score-example modal-score-pass">3</span><span>代表該科 <strong>及　格</strong> (獲得學分)</span></li><li style="display:flex; align-items:center;"><span class="modal-score-example modal-score-fail">3</span><span>代表該科 <strong>不及格</strong> (未獲學分)</span></li></ul>
                 <p style="margin-top: 25px; font-weight:bold;">上方儀表板說明</p>
-                <ul style="list-style:none; padding:0; margin:15px 0;">
-                    <li style="margin-bottom:10px; display:flex; align-items:center;"><span class="status-badge badge-green">綠底</span><span>代表該項目已達畢業門檻</span></li>
-                    <li style="display:flex; align-items:center;"><span class="status-badge badge-red">紅底</span><span>代表該項目未達畢業門檻</span></li>
-                </ul>
+                <ul style="list-style:none; padding:0; margin:15px 0;"><li style="margin-bottom:10px; display:flex; align-items:center;"><span class="status-badge badge-green">綠底</span><span>代表該項目已達畢業門檻</span></li><li style="display:flex; align-items:center;"><span class="status-badge badge-red">紅底</span><span>代表該項目未達畢業門檻</span></li></ul>
                 <p style="font-size:0.95rem; color:#666; margin-top:25px; border-top:1px solid #eee; padding-top:15px; text-align: center;">記住哦~系統只是試算 最終結果依教務處註冊組為準<br>by 放不下新中的人製作</p>
             </div>
         </div>
     </div>
     <div id="tableContainer" class="table-container">
-        <table class="main-table">
-            <colgroup><col style="width: 7%;"><col style="width: 18%;"><col style="width: 25%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"></colgroup>
-            <thead><tr><th colspan="2">屬性</th><th>科目名稱</th><th>一上</th><th>一下</th><th>二上</th><th>二下</th><th>三上</th><th>三下</th></tr></thead>
-            <tbody id="tableBody"></tbody>
+        <table class="main-table"><colgroup><col style="width: 7%;"><col style="width: 18%;"><col style="width: 25%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"><col style="width: 8.33%;"></colgroup>
+            <thead><tr><th colspan="2">屬性</th><th>科目名稱</th><th>一上</th><th>一下</th><th>二上</th><th>二下</th><th>三上</th><th>三下</th></tr></thead><tbody id="tableBody"></tbody>
         </table>
     </div>
 <script>
@@ -171,122 +167,68 @@
     function handleOutsideClick(event) { if (event.target.classList.contains('modal-overlay')) { if(!currentUser && event.target.id === 'authModal') return; event.target.style.display = 'none'; } }
     function showMsg(txt, type='info') { const b = document.getElementById('msgBox'); b.innerText = txt; b.style.background = type==='error'?'#dc3545':'#28a745'; b.style.display = 'block'; setTimeout(()=>b.style.display='none', 2500); }
     async function handleAuth() { const sid = document.getElementById('authID').value.trim(); const pwd = document.getElementById('authPassword').value; const email = `${sid}@school.edu.tw`; try { if(document.getElementById('regFields').style.display === 'block') { const name = document.getElementById('authName').value.trim(); if(!name) throw new Error("請輸入姓名"); const { error } = await sb.auth.signUp({ email, password: pwd, options: { data: { full_name: name, student_id: sid, role: 'student', tutor: '未設定' } } }); if(error) throw error; showMsg("註冊成功，請登入吧"); switchAuthMode(); } else { const { error } = await sb.auth.signInWithPassword({ email, password: pwd }); if(error) throw error; showMsg("登入成功"); toggleUIModal(false, 'authModal'); } } catch (e) { showMsg(e.message, 'error'); } }
-    function switchAuthMode() { 
-        const isReg = document.getElementById('regFields').style.display === 'none'; 
-        document.getElementById('regFields').style.display = isReg ? 'block' : 'none'; 
-        document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '帳號登入';
-        document.getElementById('authSwitchLink').innerText = isReg ? '已有帳號？點此登入吧' : '尚未有帳號？點此註冊';
-    }
-    async function handleLogout() { try { await sb.auth.signOut(); window.location.reload(); } catch (e) { showMsg("登出失敗", 'error'); } }
+    function switchAuthMode() { const isReg = document.getElementById('regFields').style.display === 'none'; document.getElementById('regFields').style.display = isReg ? 'block' : 'none'; document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '帳號登入'; document.getElementById('authSwitchLink').innerText = isReg ? '已有帳號？點此登入吧' : '尚未有帳號？點此註冊'; }
+    async function handleLogout() { try { await sb.auth.signOut(); userDBRecord = null; hasLoadedInitialData = false; window.location.reload(); } catch (e) { showMsg("登出失敗", 'error'); } }
     sb.auth.onAuthStateChange((event, session) => { currentUser = session ? session.user : null; if(!currentUser) { toggleUIModal(true, 'authModal'); document.querySelectorAll('.section-dashboard, .table-container, .admin-backend').forEach(el => el.style.display = 'none'); } else { updateUI(); } });
     function updateUI() { 
-        const tableContainer = document.getElementById('tableContainer');
-        const adminBackend = document.getElementById('adminBackend');
-        const dashboard = document.getElementById('dashboardSection');
-        const userStatusDisplay = document.getElementById('userStatusDisplay');
+        const tableContainer = document.getElementById('tableContainer'); const adminBackend = document.getElementById('adminBackend'); const dashboard = document.getElementById('dashboardSection'); const userStatusDisplay = document.getElementById('userStatusDisplay');
         if(currentUser) {
-            document.querySelectorAll('.section-dashboard').forEach(el => el.style.display = 'block');
-            const m = currentUser.user_metadata;
-            const role = m.role || 'student';
-            const displayName = userDBRecord ? userDBRecord.full_name : m.full_name;
+            document.querySelectorAll('.section-dashboard').forEach(el => { if(el.id !== 'adminBackend') el.style.display = 'block'; });
+            const m = currentUser.user_metadata; const role = m.role || 'student'; const displayName = userDBRecord ? userDBRecord.full_name : m.full_name;
             userStatusDisplay.innerHTML = `你好，${displayName} (${role==='admin'?'管理員':'學生'}) | <a href="javascript:void(0)" onclick="openProfile()">個人資料</a> | <a href="javascript:void(0)" onclick="handleLogout()">登出</a>`;
             if(role==='admin') {
                 if(!editingStudentId) { dashboard.style.display='none'; tableContainer.style.display='none'; adminBackend.style.display='block'; fetchAdminList(); } 
                 else { dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; if(lastLoadedStudentId !== editingStudentId) loadFromCloud(editingStudentId); }
-            } else { 
-                dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; 
-                if(!hasLoadedInitialData) loadFromCloud(); 
-            }
+            } else { dashboard.style.display='block'; tableContainer.style.display='block'; adminBackend.style.display='none'; if(!hasLoadedInitialData) loadFromCloud(); }
         }
     }
     function openProfile() { 
-        if (!currentUser) return;
-        const m = currentUser.user_metadata;
-        document.getElementById('profAccount').value = userDBRecord ? userDBRecord.student_id : (m.student_id || ''); 
-        document.getElementById('profName').value = userDBRecord ? userDBRecord.full_name : (m.full_name || ''); 
-        document.getElementById('profTutor').value = userDBRecord ? (userDBRecord.tutor || '未設定') : (m.tutor || '未設定'); 
-        document.getElementById('profPassword').value = '';
-        toggleUIModal(true, 'profileModal'); 
+        if (!currentUser) return; const m = currentUser.user_metadata;
+        const curData = userDBRecord || m;
+        document.getElementById('profAccount').value = curData.student_id || m.student_id || ''; 
+        document.getElementById('profName').value = curData.full_name || m.full_name || ''; 
+        document.getElementById('profTutor').value = curData.tutor || m.tutor || '未設定'; 
+        document.getElementById('profPassword').value = ''; toggleUIModal(true, 'profileModal'); 
     }
     async function updateProfile() { 
-        const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value;
-        const d = { data: { full_name: n } }; if(p) d.password = p;
-        try {
-            await sb.auth.updateUser(d);
-            await sb.from('grad_checks').update({ full_name: n }).eq('id', currentUser.id);
-            showMsg("資料已更新！"); hasLoadedInitialData = false; await loadFromCloud(); toggleUIModal(false, 'profileModal');
-        } catch (e) { showMsg(e.message, 'error'); } 
+        const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value; const d = { data: { full_name: n } }; if(p) d.password = p;
+        try { await sb.auth.updateUser(d); await sb.from('grad_checks').update({ full_name: n }).eq('id', currentUser.id); showMsg("資料已更新！"); hasLoadedInitialData = false; await loadFromCloud(); toggleUIModal(false, 'profileModal'); } catch (e) { showMsg(e.message, 'error'); } 
     }
-    async function saveToCloud() { if(!currentUser) return; const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked); const res = calculateStats(); const targetId = editingStudentId || currentUser.id; const data = { id: targetId, credits_json: checks, total_credits: res.total, is_graduated: res.pass, updated_at: new Date() }; if(!editingStudentId && userDBRecord) { data.full_name = userDBRecord.full_name; data.student_id = userDBRecord.student_id; data.tutor = userDBRecord.tutor; } const { error } = await sb.from('grad_checks').upsert(data); if(error) showMsg(error.message, 'error'); else showMsg("同步成功！"); }
+    async function saveToCloud(isAuto = false) { 
+        if(!currentUser) return; const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked); const res = calculateStats(); const targetId = editingStudentId || currentUser.id; const metadata = currentUser.user_metadata;
+        const targetData = (targetId === currentUser.id) ? (userDBRecord || metadata) : adminListData.find(s=>s.id===targetId);
+        const data = { id: targetId, credits_json: checks, total_credits: res.total, is_graduated: res.pass, updated_at: new Date(), full_name: (editingStudentId ? document.getElementById('targetStudentName').innerText : (userDBRecord?.full_name || metadata.full_name)), student_id: (targetData?.student_id || metadata.student_id), tutor: (targetData?.tutor || metadata.tutor || '未設定') }; 
+        const { error } = await sb.from('grad_checks').upsert(data); if(error) { if(!isAuto) showMsg(error.message, 'error'); } else { if(!isAuto) showMsg("同步成功！"); } 
+    }
     async function deleteStudentData(id, name) { if(!confirm(`確定要刪除「${name}」資料嗎？`)) return; await sb.from('grad_checks').delete().eq('id', id); showMsg("已刪除"); fetchAdminList(); }
     async function enterAdminEditMode(id, name) { editingStudentId = id; document.getElementById('adminEditBanner').style.display = 'block'; document.getElementById('targetStudentName').innerText = name; updateUI(); }
     function exitAdminEditMode() { editingStudentId = null; lastLoadedStudentId = null; document.getElementById('adminEditBanner').style.display = 'none'; updateUI(); }
-    function openAdminUserEdit(index) {
-        const s = adminListData[index];
-        if(!s) return;
-        document.getElementById('editUserId').value = s.id;
-        document.getElementById('editUserSid').value = s.student_id;
-        document.getElementById('editUserName').value = s.full_name;
-        document.getElementById('editUserTutor').value = s.tutor || '未設定';
-        document.getElementById('editUserPwd').value = '';
-        toggleUIModal(true, 'adminUserModal');
+    function openAdminUserEdit(index) { 
+        const s = adminListData[index]; if(!s) return; 
+        document.getElementById('editUserId').value = s.id; 
+        document.getElementById('editUserSid').value = s.student_id || ''; 
+        document.getElementById('editUserName').value = s.full_name || ''; 
+        document.getElementById('editUserTutor').value = s.tutor || '未設定'; 
+        document.getElementById('editUserPwd').value = ''; toggleUIModal(true, 'adminUserModal'); 
     }
     async function saveAdminUserEdit() { const id = document.getElementById('editUserId').value, sid = document.getElementById('editUserSid').value, n = document.getElementById('editUserName').value, t = document.getElementById('editUserTutor').value; try { const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, tutor: t }).eq('id', id); if(error) throw error; showMsg("帳號資料已更新"); toggleUIModal(false, 'adminUserModal'); fetchAdminList(); } catch (e) { showMsg(e.message, 'error'); } }
     async function loadFromCloud(tid = null) { 
-        const uid = tid || currentUser.id; 
-        const { data } = await sb.from('grad_checks').select('*').eq('id', uid).single(); 
-        if(data) { 
-            if(!tid) { userDBRecord = data; hasLoadedInitialData = true; updateUI(); } else { lastLoadedStudentId = tid; }
-            if(data.credits_json) { 
-                document.querySelectorAll(".toggle-checkbox").forEach(c => c.checked = false); 
-                Object.keys(data.credits_json).forEach(id => { const el = document.getElementById(id); if(el) el.checked = data.credits_json[id]; }); 
-                calculate(); 
-            } 
-        } 
+        const uid = tid || currentUser.id; const { data } = await sb.from('grad_checks').select('*').eq('id', uid).single(); 
+        if(data) { if(!tid) { userDBRecord = data; hasLoadedInitialData = true; updateUI(); } else { lastLoadedStudentId = tid; } if(data.credits_json) { document.querySelectorAll(".toggle-checkbox").forEach(c => c.checked = false); Object.keys(data.credits_json).forEach(id => { const el = document.getElementById(id); if(el) el.checked = data.credits_json[id]; }); calculate(); } } 
+        else if (!tid && currentUser) { await saveToCloud(true); }
     }
     async function fetchAdminList() { 
-        const { data } = await sb.from('grad_checks').select('*'); 
-        const b = document.getElementById('adminListBody'); 
-        b.innerHTML = ""; 
-        if(data) {
-            adminListData = data;
-            data.forEach((s, i) => { 
-                const tr = document.createElement('tr'); 
-                tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}', '${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}', '${s.full_name}')">刪除資料</button></td>`; 
-                b.appendChild(tr); 
-            }); 
-        }
+        const sortType = document.getElementById('adminSort').value; const { data } = await sb.from('grad_checks').select('*'); const b = document.getElementById('adminListBody'); b.innerHTML = ""; 
+        if(data) { adminListData = data; if(sortType === 'save') adminListData.sort((a,b) => new Date(b.updated_at) - new Date(a.updated_at)); else if(sortType === 'join') adminListData.sort((a,b) => new Date(a.created_at || a.updated_at) - new Date(b.created_at || b.updated_at)); else if(sortType === 'sid') adminListData.sort((a,b) => (a.student_id || '').localeCompare(b.student_id || '', undefined, {numeric: true})); adminListData.forEach((s, i) => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td><button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}', '${s.full_name}')">觀看檢核表</button><button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}', '${s.full_name}')">刪除資料</button></td>`; b.appendChild(tr); }); } 
     }
     function renderTable() { 
-        const tbody = document.getElementById("tableBody"); tbody.innerHTML = ""; 
-        const countMap = {}; curriculum.forEach(i => { if(!countMap[i.cat]) countMap[i.cat]={t:0, types:{}}; countMap[i.cat].t++; if(!countMap[i.cat].types[i.type]) countMap[i.cat].types[i.type]=0; countMap[i.cat].types[i.type]++; }); 
-        let rC = {}, rT = {}; 
-        curriculum.forEach((item, index) => { 
-            const tr = document.createElement("tr"); 
-            if(!rC[item.cat]) { 
-                let td = document.createElement("td"); td.innerText = mapping.cat[item.cat].text; 
-                td.className = "col-cat-major " + mapping.cat[item.cat].class; 
-                td.rowSpan = countMap[item.cat].t; tr.appendChild(td); rC[item.cat]=true; rT[item.cat]={}; 
-            } 
-            if(!rT[item.cat][item.type]) { 
-                let td = document.createElement("td"); td.innerText = mapping.type[item.type]; 
-                td.className = "col-cat-minor " + mapping.cat[item.cat].subClass; 
-                td.rowSpan = countMap[item.cat].types[item.type]; tr.appendChild(td); rT[item.cat][item.type]=true; 
-            } 
-            let tdN = document.createElement("td"); tdN.innerHTML = item.name; tdN.className = "col-name"; tr.appendChild(tdN); 
-            item.credits.forEach((c, sIdx) => { 
-                let td = document.createElement("td"); td.className = "col-sem"; 
-                if(c > 0) { 
-                    let id = `chk-${index}-${sIdx}`; 
-                    td.innerHTML = `<input type="checkbox" class="toggle-checkbox" id="${id}" data-val="${c}" data-cat="${item.cat}" data-type="${item.type}" onchange="calculate()" checked><label class="score-label" for="${id}">${c}</label>`; 
-                } else { td.innerText = "-"; td.className = "zero-score"; } tr.appendChild(td); 
-            }); tbody.appendChild(tr); 
-        }); 
+        const tbody = document.getElementById("tableBody"); tbody.innerHTML = ""; const countMap = {}; curriculum.forEach(i => { if(!countMap[i.cat]) countMap[i.cat]={t:0, types:{}}; countMap[i.cat].t++; if(!countMap[i.cat].types[i.type]) countMap[i.cat].types[i.type]=0; countMap[i.cat].types[i.type]++; }); 
+        let rC = {}, rT = {}; curriculum.forEach((item, index) => { const tr = document.createElement("tr"); if(!rC[item.cat]) { let td = document.createElement("td"); td.innerText = mapping.cat[item.cat].text; td.className = "col-cat-major " + mapping.cat[item.cat].class; td.rowSpan = countMap[item.cat].t; tr.appendChild(td); rC[item.cat]=true; rT[item.cat]={}; } if(!rT[item.cat][item.type]) { let td = document.createElement("td"); td.innerText = mapping.type[item.type]; td.className = "col-cat-minor " + mapping.cat[item.cat].subClass; td.rowSpan = countMap[item.cat].types[item.type]; tr.appendChild(td); rT[item.cat][item.type]=true; } let tdN = document.createElement("td"); tdN.innerHTML = item.name; tdN.className = "col-name"; tr.appendChild(tdN); item.credits.forEach((c, sIdx) => { let td = document.createElement("td"); td.className = "col-sem"; if(c > 0) { let id = `chk-${index}-${sIdx}`; td.innerHTML = `<input type="checkbox" class="toggle-checkbox" id="${id}" data-val="${c}" data-cat="${item.cat}" data-type="${item.type}" onchange="calculate(); saveToCloud(true);" checked><label class="score-label" for="${id}">${c}</label>`; } else { td.innerText = "-"; td.className = "zero-score"; } tr.appendChild(td); }); tbody.appendChild(tr); }); 
     }
     function calculateStats() { let total = 0, dept = 0, prof = 0, prac = 0; document.querySelectorAll(".toggle-checkbox:checked").forEach(input => { let v = parseInt(input.dataset.val), c = input.dataset.cat, t = parseInt(input.dataset.type); total += v; if(c==='dept') dept += v; if(t==2||t==3) prof += v; if(t==3) prac += v; }); return { total, pass: (total >= 160 && dept >= DEPT_THRESHOLD && prof >= 60 && prac >= 45) }; }
     function calculate() { const { total, pass } = calculateStats(); let deptVal = 0, profVal = 0, pracVal = 0; document.querySelectorAll(".toggle-checkbox:checked").forEach(input => { let v = parseInt(input.dataset.val), c = input.dataset.cat, t = parseInt(input.dataset.type); if(c==='dept') deptVal += v; if(t==2||t==3) profVal += v; if(t==3) pracVal += v; }); const cTotal = document.getElementById("cell-total"); if(cTotal) { cTotal.innerText = total; cTotal.style.backgroundColor = total >= 160 ? "#d4edda" : "#f8d7da"; } const cDept = document.getElementById("cell-dept"); if(cDept) { cDept.innerText = deptVal; cDept.style.backgroundColor = deptVal >= DEPT_THRESHOLD ? "#d4edda" : "#f8d7da"; } const cProf = document.getElementById("cell-prof-prac"); if(cProf) { cProf.innerText = profVal; cProf.style.backgroundColor = profVal >= 60 ? "#d4edda" : "#f8d7da"; } const cPrac = document.getElementById("cell-prac"); if(cPrac) { cPrac.innerText = pracVal; cPrac.style.backgroundColor = pracVal >= 45 ? "#d4edda" : "#f8d7da"; } const st = document.getElementById("finalStatus"); if(st) { st.innerText = pass ? "唉呦不錯喔~你竟然可以畢業" : "你不能畢業欸~好可憐"; st.className = "status-bar " + (pass ? "status-pass" : "status-fail"); } }
-    function setAllStatus(p) { document.querySelectorAll(".toggle-checkbox").forEach(chk => chk.checked = p); calculate(); }
-    initThresholds(); renderTable(); calculate();
+    function setAllStatus(p) { document.querySelectorAll(".toggle-checkbox").forEach(chk => { chk.checked = p; }); calculate(); saveToCloud(true); }
+    initThresholds(); renderTable();
 </script>
 </body>
 </html>
