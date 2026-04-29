@@ -258,37 +258,6 @@
 
     .modal-body { font-size: 1.05rem; line-height: 1.7; color: #333; }
 
-    .modal-score-example {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 60px;
-      height: 50px;
-      border-radius: 6px;
-      font-weight: 800;
-      font-size: 1.6rem;
-      margin-right: 20px;
-      box-sizing: border-box;
-      flex-shrink: 0;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 6px 14px;
-      font-size: 1.3rem;
-      font-weight: 900;
-      border-radius: 8px;
-      margin-right: 12px;
-      vertical-align: middle;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      line-height: 1.2;
-    }
-
-    .badge-green { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
-    .badge-red { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
-
     .admin-backend {
       display: none;
       padding: 20px;
@@ -352,17 +321,6 @@
     }
     .input-group select:disabled { background-color: #eee; cursor: not-allowed; }
 
-    .admin-edit-banner {
-      display: none;
-      background: #6366f1;
-      color: white;
-      padding: 10px;
-      text-align: center;
-      font-weight: bold;
-      border-radius: 8px;
-      margin: 10px;
-    }
-
     .sort-select {
       padding: 6px 12px;
       border-radius: 6px;
@@ -400,14 +358,14 @@
 <body>
   <div id="msgBox"></div>
 
-  <!-- 狀態顯示區 -->
+  <!-- 用戶頂部 -->
   <div id="statusHeader" class="section-dashboard" style="box-shadow:none; border-bottom: 1px solid #eee; padding-bottom: 5px;">
     <div id="userStatusDisplay" style="font-size: 0.8rem; color: #888; text-align: right; margin-bottom: 5px;"></div>
   </div>
 
-  <!-- 主要儀表板 -->
+  <!-- 試算儀表板 -->
   <div id="dashboardSection" class="section-dashboard" style="margin-top: -5px;">
-    <div id="adminEditBanner" class="admin-edit-banner">⚠️ 修改模式：正在編輯 <span id="targetStudentName">學生</span> 的資料 | <a href="javascript:void(0)" onclick="exitAdminEditMode()" style="color:white; text-decoration:underline;">取消返回列表</a></div>
+    <div id="adminEditBanner" class="admin-edit-banner" style="display:none; background:#6366f1; color:white; padding:10px; text-align:center; font-weight:bold; border-radius:8px; margin:10px;">⚠️ 修改模式：正在編輯 <span id="targetStudentName">學生</span> 的資料 | <a href="javascript:void(0)" onclick="exitAdminEditMode()" style="color:white; text-decoration:underline;">取消返回列表</a></div>
     <div id="finalStatus" class="status-bar status-fail">計算中...</div>
     <table class="result-table">
       <thead>
@@ -435,7 +393,7 @@
     </div>
   </div>
 
-  <!-- 列表管理區 -->
+  <!-- 名單管理區 -->
   <div id="adminBackend" class="admin-backend">
     <div class="admin-header">
       <div style="display:flex; align-items:center; gap:10px;">
@@ -492,7 +450,7 @@
       <div class="input-group"><label id="profYearLabel">入學年份</label><select id="profEntryYear" disabled></select></div>
       <div class="input-group"><label id="profDeptLabel">科系</label><select id="profEntryDept" disabled></select></div>
       <div id="profStudentTutorArea" class="input-group">
-        <label id="profTutorLabel">導師 (僅管理員可更正)</label>
+        <label id="profTutorLabel">導師 (由系統對應)</label>
         <input type="text" id="profTutor" disabled style="background:#eee;">
       </div>
       <p style="font-size:0.85rem; color:#d946ef; margin-bottom:15px; font-weight:bold;">※ 入學年份與科系如有誤請洽管理員更正。</p>
@@ -508,9 +466,18 @@
       <input type="hidden" id="editUserId">
       <div class="input-group"><label>學號 (僅管理員可更正)</label><input type="text" id="editUserSid"></div>
       <div class="input-group"><label>姓名</label><input type="text" id="editUserName"></div>
-      <div class="input-group"><label>入學年份</label><select id="editUserEntryYear"></select></div>
-      <div class="input-group"><label>科系</label><select id="editUserEntryDept"></select></div>
-      <div class="input-group"><label>身份</label><select id="editUserRole" onchange="toggleAdminTutorField(this.value)"><option value="student">學生</option><option value="teacher">教師</option><option value="admin">管理員</option></select></div>
+      <div class="input-group">
+        <label>入學年份</label>
+        <select id="editUserEntryYear"></select>
+      </div>
+      <div class="input-group">
+        <label>科系</label>
+        <select id="editUserEntryDept"></select>
+      </div>
+      <div class="input-group">
+        <label>身份</label>
+        <select id="editUserRole" onchange="toggleAdminTutorField(this.value)"><option value="student">學生</option><option value="teacher">教師</option><option value="admin">管理員</option></select>
+      </div>
       <div id="editTutorSection" class="input-group">
         <label id="editTutorLabel">導師</label>
         <div id="editTutorWrapper"></div>
@@ -519,7 +486,7 @@
     </div>
   </div>
 
-  <!-- 刪除確認視窗 -->
+  <!-- 刪除確認彈窗 -->
   <div id="confirmModal" class="modal-overlay">
     <div class="modal-content" style="max-width:300px; text-align:center;">
       <div class="modal-header"><span>確認刪除</span></div>
@@ -531,7 +498,7 @@
     </div>
   </div>
 
-  <!-- 使用說明視窗 -->
+  <!-- 使用說明彈窗 -->
   <div id="helpModal" class="modal-overlay" onclick="handleOutsideClick(event)">
     <div class="modal-content">
       <div class="modal-header"><span>使用說明</span><span class="close-modal-btn" onclick="toggleUIModal(false,'helpModal')">&times;</span></div>
@@ -558,7 +525,7 @@
     </div>
   </div>
 
-  <!-- 表格容器 -->
+  <!-- 檢核表表格 -->
   <div id="tableContainer" class="table-container">
     <table class="main-table">
       <colgroup>
@@ -593,6 +560,7 @@
           SB_KEY = "sb_publishable_ojrdIB0TeCnl8eZXbzWsdQ_2W3JB3xT";
     const sb = supabase.createClient(SB_URL, SB_KEY);
     
+    // 名單選項
     const YEAR_OPTIONS = ["112", "113", "114", "115"];
     const DEPT_OPTIONS = ["普通科", "體育班", "農經科", "園藝科", "商經科", "資處科"];
 
@@ -672,7 +640,6 @@
       if (el) el.innerText = `(${DEPT_THRESHOLD})`;
     }
 
-    // 更新選單初始化邏輯，支持是否顯示「未設定」
     function initDropdowns(showNotSet = false) {
       const yearIds = ['authEntryYear', 'profEntryYear', 'editUserEntryYear'];
       const deptIds = ['authEntryDept', 'profEntryDept', 'editUserEntryDept'];
@@ -680,12 +647,8 @@
       yearIds.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-        
         let html = '';
-        // 只有在傳入 showNotSet 為 true 時才顯示未設定選項 (管理員編輯模式)
-        if (showNotSet) {
-          html += '<option value="未設定">未設定</option>';
-        }
+        if (showNotSet) html += '<option value="未設定">未設定</option>';
         html += YEAR_OPTIONS.map(y => `<option value="${y}">${y}年</option>`).join('');
         el.innerHTML = html;
       });
@@ -693,14 +656,22 @@
       deptIds.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
-
         let html = '';
-        if (showNotSet) {
-          html += '<option value="未設定">未設定</option>';
-        }
+        if (showNotSet) html += '<option value="未設定">未設定</option>';
         html += DEPT_OPTIONS.map(d => `<option value="${d}">${d}</option>`).join('');
         el.innerHTML = html;
       });
+    }
+
+    async function findTutorByYearDept(year, dept) {
+      if (year === '未設定' || dept === '未設定') return '未設定';
+      const { data } = await sb.from('grad_checks')
+        .select('full_name')
+        .eq('role', 'teacher')
+        .eq('entry_year', year)
+        .eq('entry_dept', dept)
+        .maybeSingle();
+      return data ? data.full_name : '未設定';
     }
 
     function toggleUIModal(show, id) {
@@ -734,6 +705,9 @@
                 entryDept = document.getElementById('authEntryDept').value;
           if (!name) throw new Error("請輸入姓名");
           
+          // 註冊時自動匹配導師
+          const matchedTutor = await findTutorByYearDept(entryYear, entryDept);
+
           const { error } = await sb.auth.signUp({
             email,
             password: pwd,
@@ -742,7 +716,7 @@
                 full_name: name, 
                 student_id: sid, 
                 role: 'student', 
-                tutor: '未設定',
+                tutor: matchedTutor,
                 entry_year: entryYear,
                 entry_dept: entryDept
               } 
@@ -767,8 +741,7 @@
       document.getElementById('regFields').style.display = isReg ? 'block' : 'none';
       document.getElementById('authTitle').innerText = isReg ? '註冊新帳號' : '帳號登入';
       document.getElementById('authSwitchLink').innerText = isReg ? '已有帳號？點此登入吧' : '尚未有帳號？點此註冊';
-      // 註冊時不包含未設定
-      initDropdowns(false);
+      initDropdowns(false); 
     }
 
     async function handleLogout() {
@@ -809,13 +782,9 @@
               
         userStatusDisplay.innerHTML = `你好，${displayName} (${mapping.role[role] || '使用者'}) | <a href="javascript:void(0)" onclick="openProfile()">個人資料</a> | <a href="javascript:void(0)" onclick="handleLogout()">登出</a>`;
         
-        if (role === 'admin') {
-          saveBtn.innerText = '管理後台';
-        } else if (role === 'teacher') {
-          saveBtn.innerText = '班級資料';
-        } else {
-          saveBtn.innerText = '雲端存檔';
-        }
+        if (role === 'admin') saveBtn.innerText = '管理後台';
+        else if (role === 'teacher') saveBtn.innerText = '班級資料';
+        else saveBtn.innerText = '雲端存檔';
 
         if (editingStudentId) {
           dashboard.style.display = 'block';
@@ -840,13 +809,8 @@
 
     function handleMainAction() {
       const role = userDBRecord?.role || currentUser?.user_metadata?.role || 'student';
-      if (role === 'student') {
-        saveToCloud();
-      } else {
-        isViewingClassList = true;
-        editingStudentId = null;
-        updateUI();
-      }
+      if (role === 'student') saveToCloud();
+      else { isViewingClassList = true; editingStudentId = null; updateUI(); }
     }
 
     function handleTeacherReturnToTrial() {
@@ -861,21 +825,13 @@
             curData = userDBRecord || m,
             role = curData.role || 'student';
       
-      // 個人資料選單不包含「未設定」，且維持原本選值
       initDropdowns(false); 
-
       document.getElementById('profAccount').value = curData.student_id || '';
       document.getElementById('profName').value = curData.full_name || '';
-      
-      const yearSelect = document.getElementById('profEntryYear');
-      const deptSelect = document.getElementById('profEntryDept');
-      
-      yearSelect.value = curData.entry_year || YEAR_OPTIONS[0];
-      deptSelect.value = curData.entry_dept || DEPT_OPTIONS[0];
-      
-      // 學生與教師禁止修改，僅能檢視
-      yearSelect.disabled = true;
-      deptSelect.disabled = true;
+      const yrSel = document.getElementById('profEntryYear'), dtSel = document.getElementById('profEntryDept');
+      yrSel.value = curData.entry_year || YEAR_OPTIONS[0];
+      dtSel.value = curData.entry_dept || DEPT_OPTIONS[0];
+      yrSel.disabled = true; dtSel.disabled = true;
       
       const tutorArea = document.getElementById('profStudentTutorArea');
       if (role === 'student') {
@@ -888,15 +844,12 @@
         document.getElementById('profYearLabel').innerText = "負責年份";
         document.getElementById('profDeptLabel').innerText = "負責科系";
       }
-      
       document.getElementById('profPassword').value = '';
       toggleUIModal(true, 'profileModal');
     }
 
     async function updateProfile() {
-      const n = document.getElementById('profName').value,
-            p = document.getElementById('profPassword').value,
-            d = { data: { full_name: n } };
+      const n = document.getElementById('profName').value, p = document.getElementById('profPassword').value, d = { data: { full_name: n } };
       if (p) d.password = p;
       try {
         await sb.auth.updateUser(d);
@@ -905,19 +858,23 @@
         hasLoadedInitialData = false;
         await loadFromCloud();
         toggleUIModal(false, 'profileModal');
-      } catch (err) {
-        showMsg(err.message, 'error');
-      }
+      } catch (err) { showMsg(err.message, 'error'); }
     }
 
     async function saveToCloud(isAuto = false) {
       if (!currentUser) return;
       const checks = {}; document.querySelectorAll(".toggle-checkbox").forEach(c => checks[c.id] = c.checked);
-      const res = calculateStats(),
-            targetId = editingStudentId || currentUser.id,
-            m = currentUser.user_metadata;
-      
+      const res = calculateStats(), targetId = editingStudentId || currentUser.id, m = currentUser.user_metadata;
       const curRecord = (targetId === currentUser.id) ? (userDBRecord || m) : adminListData.find(s => s.id === targetId);
+      const role = curRecord?.role || m.role || 'student';
+      const entryYear = curRecord?.entry_year || m.entry_year || '未設定';
+      const entryDept = curRecord?.entry_dept || m.entry_dept || '未設定';
+
+      // 只有在雲端存檔時，如果是學生且導師為空，才執行自動匹配
+      let matchedTutor = curRecord?.tutor || '未設定';
+      if (role === 'student' && (matchedTutor === '未設定' || !matchedTutor)) {
+        matchedTutor = await findTutorByYearDept(entryYear, entryDept);
+      } else if (role === 'teacher') matchedTutor = '教師帳號';
       
       const data = {
         id: targetId,
@@ -926,18 +883,14 @@
         updated_at: new Date(),
         full_name: (editingStudentId ? document.getElementById('targetStudentName').innerText : (userDBRecord?.full_name || m.full_name)),
         student_id: (curRecord?.student_id || m.student_id),
-        tutor: (curRecord?.tutor || m.tutor || '未設定'),
-        role: (curRecord?.role || m.role || 'student'),
-        entry_year: (curRecord?.entry_year || m.entry_year || '未設定'),
-        entry_dept: (curRecord?.entry_dept || m.entry_dept || '未設定')
+        tutor: matchedTutor,
+        role: role,
+        entry_year: entryYear,
+        entry_dept: entryDept
       };
-      
       const { error } = await sb.from('grad_checks').upsert(data);
-      if (error) {
-        if (!isAuto) showMsg(error.message, 'error');
-      } else {
-        if (!isAuto) showMsg("同步成功！");
-      }
+      if (error) { if (!isAuto) showMsg(error.message, 'error'); } 
+      else { if (!isAuto) showMsg("同步成功！"); }
     }
 
     function deleteStudentData(id, name) {
@@ -969,36 +922,25 @@
     }
 
     function toggleAdminTutorField(role, currentVal = "未設定") {
-      const section = document.getElementById('editTutorSection'),
-            wrapper = document.getElementById('editTutorWrapper');
-      
+      const section = document.getElementById('editTutorSection'), wrapper = document.getElementById('editTutorWrapper');
       if (role === 'student') {
         section.style.display = 'block';
         let html = `<select id="editUserTutor"><option value="未設定">未設定</option>`;
-        teacherNames.forEach(tn => {
-          html += `<option value="${tn}" ${tn === currentVal ? 'selected' : ''}>${tn}</option>`;
-        });
+        teacherNames.forEach(tn => { html += `<option value="${tn}" ${tn === currentVal ? 'selected' : ''}>${tn}</option>`; });
         html += `</select>`;
         wrapper.innerHTML = html;
-      } else {
-        section.style.display = 'none';
-      }
+      } else section.style.display = 'none';
     }
 
-    function openAdminUserEdit(index) {
+    async function openAdminUserEdit(index) {
       const s = adminListData[index];
       if (!s) return;
-      
-      // 管理員後台編輯選單，允許顯示「未設定」
       initDropdowns(true); 
-
       document.getElementById('editUserId').value = s.id;
       document.getElementById('editUserSid').value = s.student_id || '';
       document.getElementById('editUserName').value = s.full_name || '';
-      
       document.getElementById('editUserEntryYear').value = s.entry_year || '未設定';
       document.getElementById('editUserEntryDept').value = s.entry_dept || '未設定';
-      
       document.getElementById('editUserRole').value = s.role || 'student';
       toggleAdminTutorField(s.role || 'student', s.tutor || '未設定');
       toggleUIModal(true, 'adminUserModal');
@@ -1013,84 +955,42 @@
             r = document.getElementById('editUserRole').value,
             t = (r === 'student') ? document.getElementById('editUserTutor').value : '教師帳號';
       try {
-        const { error } = await sb.from('grad_checks').update({
-          student_id: sid,
-          full_name: n,
-          entry_year: y,
-          entry_dept: dDept,
-          role: r,
-          tutor: t
-        }).eq('id', id);
+        const { error } = await sb.from('grad_checks').update({ student_id: sid, full_name: n, entry_year: y, entry_dept: dDept, role: r, tutor: t }).eq('id', id);
         if (error) throw error;
         showMsg("帳號資料已更新");
         toggleUIModal(false, 'adminUserModal');
         fetchAdminList();
-      } catch (err) {
-        showMsg(err.message, 'error');
-      }
+      } catch (err) { showMsg(err.message, 'error'); }
     }
 
     async function loadFromCloud(tid = null) {
-      const uid = tid || currentUser.id,
-            { data } = await sb.from('grad_checks').select('*').eq('id', uid).single();
+      const uid = tid || currentUser.id, { data } = await sb.from('grad_checks').select('*').eq('id', uid).single();
       if (data) {
-        if (!tid) {
-          userDBRecord = data;
-          hasLoadedInitialData = true;
-          updateUI();
-        } else {
-          lastLoadedStudentId = tid;
-        }
+        if (!tid) { userDBRecord = data; hasLoadedInitialData = true; updateUI(); } 
+        else { lastLoadedStudentId = tid; }
         if (data.credits_json) {
           document.querySelectorAll(".toggle-checkbox").forEach(c => c.checked = false);
-          Object.keys(data.credits_json).forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.checked = data.credits_json[id];
-          });
+          Object.keys(data.credits_json).forEach(id => { const el = document.getElementById(id); if (el) el.checked = data.credits_json[id]; });
           calculate();
         }
-      } else if (!tid && currentUser) {
-        await saveToCloud(true);
-      }
+      } else if (!tid && currentUser) { await saveToCloud(true); }
     }
 
     async function fetchAdminList() {
-      const sortType = document.getElementById('adminSort').value,
-            { data } = await sb.from('grad_checks').select('*'),
-            b = document.getElementById('adminListBody');
+      const sortType = document.getElementById('adminSort').value, { data } = await sb.from('grad_checks').select('*'), b = document.getElementById('adminListBody');
       b.innerHTML = "";
       if (data) {
-        const m = currentUser.user_metadata,
-              role = userDBRecord?.role || m.role || 'student',
-              myYear = userDBRecord?.entry_year || m.entry_year,
-              myDept = userDBRecord?.entry_dept || m.entry_dept;
-              
+        const m = currentUser.user_metadata, role = userDBRecord?.role || m.role || 'student', myYear = userDBRecord?.entry_year || m.entry_year, myDept = userDBRecord?.entry_dept || m.entry_dept;
         teacherNames = data.filter(u => u.role === 'teacher').map(u => u.full_name);
         adminListData = data;
-        
-        if (role === 'teacher') {
-          adminListData = adminListData.filter(s => 
-            s.entry_year === myYear && 
-            s.entry_dept === myDept && 
-            s.role === 'student'
-          );
-        }
-        
-        if (sortType === 'save') {
-          adminListData.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-        } else if (sortType === 'join') {
-          adminListData.sort((a, b) => new Date(a.created_at || a.updated_at) - new Date(b.created_at || b.updated_at));
-        } else if (sortType === 'sid') {
-          adminListData.sort((a, b) => (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true }));
-        }
-        
+        if (role === 'teacher') adminListData = adminListData.filter(s => s.entry_year === myYear && s.entry_dept === myDept && s.role === 'student');
+        if (sortType === 'save') adminListData.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        else if (sortType === 'join') adminListData.sort((a, b) => new Date(a.created_at || a.updated_at) - new Date(b.created_at || b.updated_at));
+        else if (sortType === 'sid') adminListData.sort((a, b) => (a.student_id || '').localeCompare(b.student_id || '', undefined, { numeric: true }));
         adminListData.forEach((s, i) => {
           const tr = document.createElement('tr');
           let btns = `<button class="btn-mini" style="background:#28a745" onclick="enterAdminEditMode('${s.id}','${s.full_name}')">觀看檢核表</button>`;
-          if (role === 'admin') {
-            btns += `<button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button>
-                     <button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}','${s.full_name}')">刪除資料</button>`;
-          }
+          if (role === 'admin') btns += `<button class="btn-mini" style="background:#3b82f6" onclick="openAdminUserEdit(${i})">個人資料</button><button class="btn-mini" style="background:#dc3545" onclick="deleteStudentData('${s.id}','${s.full_name}')">刪除資料</button>`;
           tr.innerHTML = `<td>${s.full_name}</td><td>${s.student_id}</td><td>${btns}</td>`;
           b.appendChild(tr);
         });
@@ -1107,7 +1007,6 @@
         if (!countMap[i.cat].types[i.type]) countMap[i.cat].types[i.type] = 0;
         countMap[i.cat].types[i.type]++;
       });
-      
       let rC = {}, rT = {};
       curriculum.forEach((item, index) => {
         const tr = document.createElement("tr");
@@ -1129,20 +1028,14 @@
           rT[item.cat][item.type] = true;
         }
         let tdN = document.createElement("td");
-        tdN.innerHTML = item.name;
-        tdN.className = "col-name";
+        tdN.innerHTML = item.name; tdN.className = "col-name";
         tr.appendChild(tdN);
         item.credits.forEach((c, sIdx) => {
-          let td = document.createElement("td");
-          td.className = "col-sem";
+          let td = document.createElement("td"); td.className = "col-sem";
           if (c > 0) {
             let id = `chk-${index}-${sIdx}`;
-            td.innerHTML = `<input type="checkbox" class="toggle-checkbox" id="${id}" data-val="${c}" data-cat="${item.cat}" data-type="${item.type}" onchange="calculate(); saveToCloud(true);" checked>
-                            <label class="score-label" for="${id}">${c}</label>`;
-          } else {
-            td.innerText = "-";
-            td.className = "zero-score";
-          }
+            td.innerHTML = `<input type="checkbox" class="toggle-checkbox" id="${id}" data-val="${c}" data-cat="${item.cat}" data-type="${item.type}" onchange="calculate(); saveToCloud(true);" checked><label class="score-label" for="${id}">${c}</label>`;
+          } else { td.innerText = "-"; td.className = "zero-score"; }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -1152,9 +1045,7 @@
     function calculateStats() {
       let total = 0, dept = 0, prof = 0, prac = 0;
       document.querySelectorAll(".toggle-checkbox:checked").forEach(input => {
-        let v = parseInt(input.dataset.val),
-            c = input.dataset.cat,
-            t = parseInt(input.dataset.type);
+        let v = parseInt(input.dataset.val), c = input.dataset.cat, t = parseInt(input.dataset.type);
         total += v;
         if (c === 'dept') dept += v;
         if (t == 2 || t == 3) prof += v;
@@ -1165,46 +1056,23 @@
 
     function calculate() {
       const { total, pass } = calculateStats();
-      let deptVal = 0, profVal = 0, pracVal = 0;
-      document.querySelectorAll(".toggle-checkbox:checked").forEach(input => {
-        let v = parseInt(input.dataset.val),
-            c = input.dataset.cat,
-            t = parseInt(input.dataset.type);
-        if (c === 'dept') deptVal += v;
-        if (t == 2 || t == 3) profVal += v;
-        if (t == 3) pracVal += v;
+      let dV = 0, fV = 0, pV = 0;
+      document.querySelectorAll(".toggle-checkbox:checked").forEach(i => {
+        let v = parseInt(i.dataset.val), c = i.dataset.cat, t = parseInt(i.dataset.type);
+        if (c === 'dept') dV += v;
+        if (t == 2 || t == 3) fV += v;
+        if (t == 3) pV += v;
       });
-      
-      const cTotal = document.getElementById("cell-total");
-      if (cTotal) {
-        cTotal.innerText = total;
-        cTotal.style.backgroundColor = total >= 160 ? "#d4edda" : "#f8d7da";
-      }
-      const cDept = document.getElementById("cell-dept");
-      if (cDept) {
-        cDept.innerText = deptVal;
-        cDept.style.backgroundColor = deptVal >= DEPT_THRESHOLD ? "#d4edda" : "#f8d7da";
-      }
-      const cProf = document.getElementById("cell-prof-prac");
-      if (cProf) {
-        cProf.innerText = profVal;
-        cProf.style.backgroundColor = profVal >= 60 ? "#d4edda" : "#f8d7da";
-      }
-      const cPrac = document.getElementById("cell-prac");
-      if (cPrac) {
-        cPrac.innerText = pracVal;
-        cPrac.style.backgroundColor = pracVal >= 45 ? "#d4edda" : "#f8d7da";
-      }
-      
+      const cT = document.getElementById("cell-total"), cD = document.getElementById("cell-dept"), cF = document.getElementById("cell-prof-prac"), cP = document.getElementById("cell-prac");
+      if (cT) { cT.innerText = total; cT.style.backgroundColor = total >= 160 ? "#d4edda" : "#f8d7da"; }
+      if (cD) { cD.innerText = dV; cD.style.backgroundColor = dV >= DEPT_THRESHOLD ? "#d4edda" : "#f8d7da"; }
+      if (cF) { cF.innerText = fV; cF.style.backgroundColor = fV >= 60 ? "#d4edda" : "#f8d7da"; }
+      if (cP) { cP.innerText = pV; cP.style.backgroundColor = pV >= 45 ? "#d4edda" : "#f8d7da"; }
       const st = document.getElementById("finalStatus");
       if (st) {
-        const m = currentUser?.user_metadata,
-              role = userDBRecord?.role || m?.role || 'student';
-        if (role === 'teacher') {
-          st.innerText = pass ? "試算結果：符合畢業門檻" : "試算結果：尚未達到畢業門檻";
-        } else {
-          st.innerText = pass ? "唉呦不錯喔~你竟然可以畢業" : "你不能畢業欸~好可憐";
-        }
+        const m = currentUser?.user_metadata, role = userDBRecord?.role || m?.role || 'student';
+        if (role === 'teacher') st.innerText = pass ? "試算結果：符合畢業門檻" : "試算結果：尚未達到畢業門檻";
+        else st.innerText = pass ? "唉呦不錯喔~你竟然可以畢業" : "你不能畢業欸~好可憐";
         st.className = "status-bar " + (pass ? "status-pass text-white" : "status-fail text-white");
       }
     }
@@ -1216,7 +1084,7 @@
     }
 
     initThresholds();
-    initDropdowns(false); // 預設初始化不顯示未設定
+    initDropdowns(false); 
     renderTable();
   </script>
 </body>
